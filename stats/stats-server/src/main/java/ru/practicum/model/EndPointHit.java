@@ -12,12 +12,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table
+@Table(name = "EndPointHit")
 @Getter
 @Setter
 @RequiredArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class EndpointHit {
+public class EndPointHit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,5 +28,5 @@ public class EndpointHit {
 
     private String ip;
 
-    private LocalDateTime timestamp;
+    private LocalDateTime time;
 }
