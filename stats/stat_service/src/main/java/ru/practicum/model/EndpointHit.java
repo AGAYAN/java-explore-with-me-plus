@@ -1,18 +1,17 @@
 package ru.practicum.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table
+@Table(name = "EndPointHit")
 @Getter
 @Setter
 @RequiredArgsConstructor
 @EqualsAndHashCode(of = "id")
-public class EndpointHit {
+public class EndPointHit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,5 +22,5 @@ public class EndpointHit {
 
     private String ip;
 
-    private LocalDateTime timestamp;
+    private LocalDateTime time;
 }
