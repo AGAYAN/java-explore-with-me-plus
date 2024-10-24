@@ -2,18 +2,21 @@ package ru.practicum;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDateTime;
 
-@NotBlank
 @Getter
 @Setter
-@RequiredArgsConstructor
 public class EndPointHitDto {
+
+    @NotBlank
     private String app;
-    private String url;
+    @NotBlank
+    private String uri;
+    @NotBlank
     private String ip;
-    private LocalDateTime time;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime requestTime;
 }
