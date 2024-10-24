@@ -18,6 +18,7 @@ import lombok.Setter;
 @RequiredArgsConstructor
 @EqualsAndHashCode(of = "id")
 public class EndPointHit {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,5 +29,5 @@ public class EndPointHit {
 
     private String ip;
 
-    private LocalDateTime time;
+    private LocalDateTime requestTime;
 }
