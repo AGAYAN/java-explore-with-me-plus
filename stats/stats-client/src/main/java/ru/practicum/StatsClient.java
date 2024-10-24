@@ -3,7 +3,6 @@ package ru.practicum;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Mono;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -20,20 +19,21 @@ public class StatsClient {
     }
 
     // Метод для сохранения информации о посещении
-    public Mono<Void> saveHit(EndpointHitDto hit) {
-        return webClient.post()
+    public void saveHit(EndpointHitDto hit) {
+        webClient.post()
                 .uri("/hit")
                 .bodyValue(hit)
                 .retrieve()
-                .bodyToMono(Void.class);
+                .bodyToMono(Void.class)
+                .block();
     }
 
     // Метод для получения статистики по посещениям
-    public Mono<ViewStatsDto[]> getStats(String start, String end, String[] uris, boolean unique) {
+    public ViewStatsDto[] getStats(String start, String end, String[] uris, boolean unique) {
         String uri = UriComponentsBuilder.fromUriString("/stats")
                 .queryParam("start", URLEncoder.encode(start, StandardCharsets.UTF_8))
                 .queryParam("end", URLEncoder.encode(end, StandardCharsets.UTF_8))
-                .queryParam("uris", uris)
+                .queryParam("uris", uris) // Отправляем массив как параметр
                 .queryParam("unique", unique)
                 .build()
                 .toUriString();
@@ -41,6 +41,7 @@ public class StatsClient {
         return webClient.get()
                 .uri(uri)
                 .retrieve()
-                .bodyToMono(ViewStatsDto[].class);
+                .bodyToMono(ViewStatsDto[].class)
+                .block();
     }
 }
