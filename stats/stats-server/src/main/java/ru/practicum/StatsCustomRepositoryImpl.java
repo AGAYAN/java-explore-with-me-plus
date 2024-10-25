@@ -30,7 +30,7 @@ public class StatsCustomRepositoryImpl implements StatsCustomRepository {
     // FROM
     final Root<EndPointHit> endPointHitTable = query.from(EndPointHit.class);
     // SELECT app, uri, COUNT(DISTINCT ip)
-    Expression<Long> hitsCount = unique
+    final Expression<Long> hitsCount = unique
         ? cb.countDistinct(endPointHitTable.get("ip"))
         : cb.count(endPointHitTable.get("ip"));
     query.multiselect(

@@ -1,5 +1,6 @@
 package ru.practicum;
 
+import jakarta.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,7 @@ public class StatsController {
 
   @PostMapping("/hit")
   @ResponseStatus(HttpStatus.CREATED)
-  public void saveEndpointHit(@RequestBody final EndPointHitDto endpointHit) {
+  public void saveEndpointHit(@Valid @RequestBody final EndPointHitDto endpointHit) {
     log.info("Received request POST /hit with hit info {}", endpointHit);
     statsService.saveEndpointHit(endpointHit);
   }
