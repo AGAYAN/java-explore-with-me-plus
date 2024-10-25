@@ -1,5 +1,6 @@
 package ru.practicum.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -10,24 +11,31 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 @Entity
-@Table(name = "EndPointHit")
+@Table(name = "endpointhit")
 @Getter
 @Setter
 @RequiredArgsConstructor
 @EqualsAndHashCode(of = "id")
+@Accessors(chain = true)
 public class EndPointHit {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(updatable = false, nullable = false)
+  private Integer id;
 
-    private String app;
+  @Column(name = "app", nullable = false)
+  private String app;
 
-    private String uri;
+  @Column(name = "uri", nullable = false)
+  private String uri;
 
-    private String ip;
+  @Column(name = "ip", nullable = false, length = 20)
+  private String ip;
 
-    private LocalDateTime requestTime;
+  @Column(name = "request_time", nullable = false)
+  private LocalDateTime requestTime = LocalDateTime.now();
 }
