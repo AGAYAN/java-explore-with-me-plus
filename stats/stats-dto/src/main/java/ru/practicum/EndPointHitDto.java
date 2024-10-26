@@ -7,9 +7,11 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 public class EndPointHitDto {
 
   @NotBlank(message = "app should not be blank.")

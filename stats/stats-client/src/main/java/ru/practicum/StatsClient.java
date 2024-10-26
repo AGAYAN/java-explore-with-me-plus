@@ -19,7 +19,7 @@ public class StatsClient {
     }
 
     // Метод для сохранения информации о посещении
-    public void saveHit(EndpointHitDto hit) {
+    public void saveHit(EndPointHitDto hit) {
         webClient.post()
                 .uri("/hit")
                 .bodyValue(hit)
