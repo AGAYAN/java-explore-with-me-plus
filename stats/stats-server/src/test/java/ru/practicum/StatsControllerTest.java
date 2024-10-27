@@ -196,11 +196,10 @@ class StatsControllerTest {
         Arguments.of("ip- blank", buildEndpointHitDto().setIp(" ")),
         Arguments.of("ip- length 40",
             buildEndpointHitDto().setIp("234.1".repeat(8))),
-        Arguments.of("requestTime- invalid format",
-            buildEndpointHitDto().setRequestTime(LocalDateTime.parse("2024-10-26 15:30",
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))),
+        Arguments.of("requestTime- null",
+            buildEndpointHitDto().setRequestTime(null)),
         Arguments.of("requestTime- in future",
-            buildEndpointHitDto().setRequestTime(LocalDateTime.now().plusSeconds(5))));
+            buildEndpointHitDto().setRequestTime(LocalDateTime.now().plusMinutes(5))));
 
   }
 
