@@ -1,25 +1,22 @@
 package ru.practicum;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class StatsClient {
 
     private final WebClient webClient;
 
-    public StatsClient(WebClient.Builder webClientBuilder) {
+    public StatsClient(WebClient.Builder webClientBuilder, @Value("${stats.client.url}") String baseUrl) {
         // Задание базового URL для HTTP-запросов (Docker)
-        String baseUrl = "http://stats-server:9090";
         this.webClient = webClientBuilder.baseUrl(baseUrl).build();
     }
 
     // Метод для сохранения информации о посещении
-    public void saveHit(EndpointHitDto hit) {
+    public void saveHit(EndPointHitDto hit) {
         webClient.post()
                 .uri("/hit")
                 .bodyValue(hit)
@@ -31,8 +28,8 @@ public class StatsClient {
     // Метод для получения статистики по посещениям
     public ViewStatsDto[] getStats(String start, String end, String[] uris, boolean unique) {
         String uri = UriComponentsBuilder.fromUriString("/stats")
-                .queryParam("start", URLEncoder.encode(start, StandardCharsets.UTF_8))
-                .queryParam("end", URLEncoder.encode(end, StandardCharsets.UTF_8))
+                .queryParam("start",  start)
+                .queryParam("end",  end)
                 .queryParam("uris", uris) // Отправляем массив как параметр
                 .queryParam("unique", unique)
                 .build()

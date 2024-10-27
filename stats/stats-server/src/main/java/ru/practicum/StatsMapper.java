@@ -18,7 +18,8 @@ public class StatsMapper {
     return new EndPointHit()
         .setApp(dto.getApp())
         .setUri(dto.getUri())
-        .setIp(dto.getIp());
+        .setIp(dto.getIp())
+        .setRequestTime(dto.getRequestTime());
   }
 
   public static List<ViewStatsDto> mapToViewStatsDto(final List<ViewStats> viewStats) {
