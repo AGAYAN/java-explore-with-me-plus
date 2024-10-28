@@ -1,7 +1,9 @@
-package ru.practicum;
+package ru.practicum.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import ru.practicum.EndPointHitDto;
+import ru.practicum.ViewStatsDto;
 
 public interface StatsService {
 

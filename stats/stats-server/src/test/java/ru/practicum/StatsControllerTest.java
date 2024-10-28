@@ -35,6 +35,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import ru.practicum.controller.StatsController;
+import ru.practicum.service.StatsService;
 
 @WebMvcTest(StatsController.class)
 class StatsControllerTest {
@@ -279,10 +281,7 @@ class StatsControllerTest {
   }
 
   private ViewStatsDto buildViewStatsDto() {
-    return new ViewStatsDto()
-        .setApp("ewm-main-service")
-        .setUri("/events/1")
-        .setHits(10L);
+    return new ViewStatsDto("ewm-main-service","/events/1",10L);
   }
 
   private static EndPointHitDto buildEndpointHitDto() {

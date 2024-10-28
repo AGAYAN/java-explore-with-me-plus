@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.repository;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.criteria.CriteriaBuilder;
@@ -9,24 +9,24 @@ import jakarta.persistence.criteria.Root;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Repository;
+import ru.practicum.ViewStatsDto;
 import ru.practicum.model.EndPointHit;
-import ru.practicum.model.ViewStats;
 
 @Repository
-public class StatsCustomRepositoryImpl implements StatsCustomRepository {
+public class StatsQueryRepositoryImpl implements StatsQueryRepository {
 
   private final EntityManager entityManager;
 
-  public StatsCustomRepositoryImpl(final EntityManager entityManager) {
+  public StatsQueryRepositoryImpl(final EntityManager entityManager) {
     this.entityManager = entityManager;
   }
 
   @Override
-  public List<ViewStats> getStats(final LocalDateTime start, final LocalDateTime end,
-                                  final List<String> uris, final boolean unique) {
+  public List<ViewStatsDto> getStats(final LocalDateTime start, final LocalDateTime end,
+                                     final List<String> uris, final boolean unique) {
 
     final CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-    final CriteriaQuery<ViewStats> query = cb.createQuery(ViewStats.class);
+    final CriteriaQuery<ViewStatsDto> query = cb.createQuery(ViewStatsDto.class);
     // FROM
     final Root<EndPointHit> endPointHitTable = query.from(EndPointHit.class);
     // SELECT app, uri, COUNT(DISTINCT ip)

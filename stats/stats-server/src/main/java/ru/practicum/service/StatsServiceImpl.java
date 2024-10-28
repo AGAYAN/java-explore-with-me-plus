@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -6,8 +6,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.EndPointHitDto;
+import ru.practicum.ViewStatsDto;
+import ru.practicum.mapper.StatsMapper;
 import ru.practicum.model.EndPointHit;
-import ru.practicum.model.ViewStats;
+import ru.practicum.repository.StatsRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -32,8 +35,7 @@ public class StatsServiceImpl implements StatsService {
     log.debug("Retrieving stats for time range: {} - {}, URIs: {}, Unique IPs: {}.",
         start, end, uris, unique);
     validateStartEndDates(start, end);
-    final List<ViewStats> result = statsRepository.getStats(start, end, uris, unique);
-    return StatsMapper.mapToViewStatsDto(result);
+    return statsRepository.getStats(start, end, uris, unique);
   }
 
   private void validateStartEndDates(final LocalDateTime start, final LocalDateTime end) {
