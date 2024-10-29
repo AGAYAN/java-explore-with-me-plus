@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.controller;
 
 import jakarta.validation.Valid;
 import java.time.LocalDateTime;
@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.EndPointHitDto;
+import ru.practicum.service.StatsService;
+import ru.practicum.ViewStatsDto;
 
 @RestController
 @RequestMapping

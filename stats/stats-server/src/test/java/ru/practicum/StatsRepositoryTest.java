@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.model.EndPointHit;
-import ru.practicum.model.ViewStats;
+import ru.practicum.repository.StatsRepository;
 
 @DataJpaTest
 @Transactional
@@ -51,15 +51,15 @@ class StatsRepositoryTest {
   void getStats_shouldReturnStatsWithCorrectCounts(final String testName, final LocalDateTime start,
                               final LocalDateTime end,
                               final List<String> uris, boolean unique,
-                              final List<ViewStats> expected) {
+                              final List<ViewStatsDto> expected) {
     statsRepository.save(hitOne);// now
     statsRepository.save(hitTwo); // now - 2d
     statsRepository.save(hitThree); // now - 5d
 
-    final List<ViewStats> actual = statsRepository.getStats(start, end, uris, unique);
+    final List<ViewStatsDto> actual = statsRepository.getStats(start, end, uris, unique);
 
     assertThat(actual).hasSize(expected.size());
-    ViewStats stats = actual.getFirst();
+    ViewStatsDto stats = actual.getFirst();
     assertThat(stats.getApp()).isEqualTo(expected.getFirst().getApp());
     assertThat(stats.getUri()).isEqualTo(expected.getFirst().getUri());
     assertThat(stats.getHits()).isEqualTo(expected.getFirst().getHits()); // non-unique IPs
@@ -75,38 +75,38 @@ class StatsRepositoryTest {
     return Stream.of(
         Arguments.of("One uri, not unique ip",
             now.minusDays(3), now.plusDays(1), List.of("/events/1"), false,
-            List.of(new ViewStats(hitOne.getApp(), hitOne.getUri(), 2L))
+            List.of(new ViewStatsDto(hitOne.getApp(), hitOne.getUri(), 2L))
         ),
 
         Arguments.of("One uri, unique ip",
             now.minusDays(3), now.plusDays(1), List.of("/events/1"),true,
-            List.of(new ViewStats(hitOne.getApp(), hitOne.getUri(), 1L))),
+            List.of(new ViewStatsDto(hitOne.getApp(), hitOne.getUri(), 1L))),
 
         Arguments.of("Multiple uri, not unique ip",
             now.minusDays(6),now.plusDays(1),List.of("/events/1", "/events/5"), false,
             List.of(
-                new ViewStats(hitOne.getApp(), hitOne.getUri(), 2L),
-                new ViewStats(hitThree.getApp(), hitThree.getUri(), 1L))),
+                new ViewStatsDto(hitOne.getApp(), hitOne.getUri(), 2L),
+                new ViewStatsDto(hitThree.getApp(), hitThree.getUri(), 1L))),
 
 
         Arguments.of("Multiple uri,  unique ip",
             now.minusDays(6),now.plusDays(1),List.of("/events/1", "/events/5"), true,
             List.of(
-                new ViewStats(hitOne.getApp(), hitOne.getUri(), 1L),
-                new ViewStats(hitThree.getApp(), hitThree.getUri(), 1L))),
+                new ViewStatsDto(hitOne.getApp(), hitOne.getUri(), 1L),
+                new ViewStatsDto(hitThree.getApp(), hitThree.getUri(), 1L))),
 
         Arguments.of("Null uri, not unique ip",
             now.minusDays(6),now.plusDays(1), null, false,
             List.of(
-                new ViewStats(hitOne.getApp(), hitOne.getUri(), 2L),
-                new ViewStats(hitThree.getApp(), hitThree.getUri(), 1L))),
+                new ViewStatsDto(hitOne.getApp(), hitOne.getUri(), 2L),
+                new ViewStatsDto(hitThree.getApp(), hitThree.getUri(), 1L))),
 
 
         Arguments.of("Null uri, unique ip",
             now.minusDays(6),now.plusDays(1), null, true,
             List.of(
-                new ViewStats(hitOne.getApp(), hitOne.getUri(), 1L),
-                new ViewStats(hitThree.getApp(), hitThree.getUri(), 1L)))
+                new ViewStatsDto(hitOne.getApp(), hitOne.getUri(), 1L),
+                new ViewStatsDto(hitThree.getApp(), hitThree.getUri(), 1L)))
     );
   }
 
