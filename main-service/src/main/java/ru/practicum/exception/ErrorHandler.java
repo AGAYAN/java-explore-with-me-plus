@@ -14,21 +14,38 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class ErrorHandler {
 
-  @ExceptionHandler
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ExceptionHandler(Exception.class)
+  @ResponseStatus
   public ResponseEntity<ApiError> handleExceptions(final Exception e) {
-    log.error("500 {}", e.getMessage(), e);
+    HttpStatus status;
+    String reason;
+
+    if (e instanceof AlreadyExistsException) {
+      status = HttpStatus.CONFLICT;
+      reason = e.getMessage();
+    } else if (e instanceof NotFoundException) {
+      status = HttpStatus.NOT_FOUND;
+      reason = e.getMessage();
+    } else {
+      status = HttpStatus.INTERNAL_SERVER_ERROR;
+      reason = "Internal server error";
+    }
+
+    log.error("{} {}", status.value(), e.getMessage(), e);
+
     final StringWriter sw = new StringWriter();
     final PrintWriter pw = new PrintWriter(sw);
     e.printStackTrace(pw);
     final String stackTrace = sw.toString();
-    final ApiError apiError = new ApiError(HttpStatus.INTERNAL_SERVER_ERROR,
-        "Internal server error.", e.getMessage(), LocalDateTime.now(),stackTrace);
+    final ApiError apiError = new ApiError(
+            status,
+            reason,
+            e.getMessage(),
+            LocalDateTime.now(),
+            stackTrace);
 
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    return ResponseEntity.status(status)
         .body(apiError);
 
   }
-
-
 }
