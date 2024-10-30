@@ -50,4 +50,11 @@ public class CategoryMapper {
                 .map(CategoryMapper::toCategoryDto)
                 .toList();
     }
+
+    public static CategoryDto toCategoryDto(NewCategoryDto category) {
+        log.info("Mapping newCategoryDto to categoryDto: {}", category);
+        Objects.requireNonNull(category);
+        return new CategoryDto()
+                .setName(category.getName());
+    }
 }

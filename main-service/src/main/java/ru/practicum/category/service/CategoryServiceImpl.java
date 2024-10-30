@@ -43,6 +43,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getCategory(int from, int size) {
+
         Pageable pageable = PageRequest.of(from / size, size);
 
         log.info("Get all categories with pagination from={}, size={}", from, size);
@@ -65,25 +66,25 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public CategoryDto updateCategory(CategoryDto dto) {
+    public CategoryDto updateCategory(Long id, NewCategoryDto dto) {
         log.info("Update category: {}", dto);
-        if (!repository.existsById(dto.getId())) {
-            throw new NotFoundException("Category with id " + dto.getId() + " not found");
-        }
         if (repository.existsByName(dto.getName())) {
             throw new AlreadyExistsException("Category with name " + dto.getName() + " already exists");
         }
 
-        Category category = CategoryMapper.toCategory(dto);
+        Category category = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category with id " + id + " not found"));
+        category.setName(dto.getName());
         repository.save(category);
-        log.info("Category updated: {}", category);
-
         return CategoryMapper.toCategoryDto(category);
     }
 
     @Override
     public void deleteCategory(Long id) {
         log.info("Delete category by id: {}", id);
+        if (!repository.existsById(id)) {
+            throw new NotFoundException("Category with id " + id + " not found");
+        }
         repository.deleteById(id);
     }
 }

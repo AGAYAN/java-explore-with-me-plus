@@ -23,9 +23,9 @@ public class AdminCategoryController {
     }
 
     @PatchMapping("/{id}")
-    public CategoryDto updateCategory(@PathVariable Long id, @RequestBody @Validated CategoryDto dto) {
+    public CategoryDto updateCategory(@PathVariable Long id, @RequestBody @Validated NewCategoryDto dto) {
         log.info("Request to update category by id: {}", id);
-        return categoryService.updateCategory(dto);
+        return categoryService.updateCategory(id, dto);
     }
 
     @DeleteMapping("/{id}")
