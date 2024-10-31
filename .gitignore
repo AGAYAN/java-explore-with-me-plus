@@ -20,3 +20,10 @@ target/
 *.iws
 *.iml
 *.ipr
+
+### VS Code ###
+.vscode/
+/volumes/
+.DS_Store
+*.db
+db/*
