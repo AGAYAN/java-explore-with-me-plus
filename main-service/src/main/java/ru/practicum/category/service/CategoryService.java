@@ -10,7 +10,7 @@ import java.util.List;
 public interface CategoryService {
 
     @Transactional
-    NewCategoryDto addCategory(NewCategoryDto dto);
+    CategoryDto addCategory(NewCategoryDto dto);
 
     List<CategoryDto> getCategory(int from, int size);
 

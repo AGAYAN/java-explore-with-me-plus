@@ -17,7 +17,7 @@ public class AdminCategoryController {
     private final CategoryService categoryService;
 
     @PostMapping
-    public NewCategoryDto addCategory(@RequestBody @Validated NewCategoryDto dto) {
+    public CategoryDto addCategory(@RequestBody @Validated NewCategoryDto dto) {
         log.info("Request to add category: {}", dto);
         return categoryService.addCategory(dto);
     }

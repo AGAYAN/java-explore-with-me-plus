@@ -28,7 +28,7 @@ public class CategoryServiceImpl implements CategoryService {
      * @return NewCategoryDto
      */
     @Override
-    public NewCategoryDto addCategory(NewCategoryDto dto) {
+    public CategoryDto addCategory(NewCategoryDto dto) {
         log.info("Validating category dto: {}", dto);
         if (repository.existsByName(dto.getName())) {
             throw new AlreadyExistsException("Category with name " + dto.getName() + " already exists");
@@ -38,7 +38,7 @@ public class CategoryServiceImpl implements CategoryService {
         repository.save(category);
         log.info("Category saved: {}", category);
 
-        return CategoryMapper.toNewCategoryDto(category);
+        return CategoryMapper.toCategoryDto(category);
     }
 
     @Override
