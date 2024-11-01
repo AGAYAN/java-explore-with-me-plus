@@ -14,7 +14,8 @@ public class UserMapper {
     public static UserDto mapToUserDto(final User user) {
         log.debug("Mapping User {} to UserDto.", user);
         Objects.requireNonNull(user);
-        return new UserDto()
+        return new UserDto() //id
+                .setId(user.getId())
                 .setName(user.getName())
                 .setEmail(user.getEmail());
     }
