@@ -1,3 +1,10 @@
+CREATE TABLE IF NOT EXISTS users
+(
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE
+);
+
 CREATE TABLE IF NOT EXISTS category
 (
     id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -32,11 +39,11 @@ CREATE TABLE IF NOT EXISTS event
     state VARCHAR(20) NOT NULL CHECK (state IN ('PENDING', 'PUBLISHED', 'CANCELED')),
     CONSTRAINT pk_event PRIMARY KEY (id),
     CONSTRAINT fk_category FOREIGN KEY (category_id) REFERENCES category (id) ON DELETE RESTRICT,
-    CONSTRAINT fk_location FOREIGN KEY (location_id) REFERENCES location (id) ON DELETE RESTRICT
---    CONSTRAINT fk_initiator FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE
+    CONSTRAINT fk_location FOREIGN KEY (location_id) REFERENCES location (id) ON DELETE RESTRICT,
+    CONSTRAINT fk_initiator FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_event_category ON event (category_id);
---CREATE INDEX idx_event_initiator ON event (initiator_id);
+CREATE INDEX idx_event_initiator ON event (initiator_id);
 CREATE INDEX  IF NOT EXISTS idx_event_state ON event (state);
 CREATE INDEX  IF NOT EXISTS idx_event_date ON event (event_date);

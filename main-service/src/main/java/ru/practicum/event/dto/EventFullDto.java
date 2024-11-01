@@ -3,24 +3,21 @@ package ru.practicum.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import lombok.Data;
+import lombok.experimental.Accessors;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.event.model.Location;
+import ru.practicum.user.dto.UserShortDto;
 
 /**
- * ADMIN API - RESPONSE
- * GET /admin/events
- * PATCH admin/events/{eventId}
- *
- * PUBLIC API - RESPONSE
- * GET /events
- * GET /events/{id}
- *
- * PRIVATE API - RESPONSE
- * POST /users/{userId}/events
- * GET /users/{userId}/events/{eventId}
- * PATCH /users/{userId}/events/{eventId}
+ * ADMIN API - RESPONSE GET /admin/events PATCH admin/events/{eventId}
+ * <p>
+ * PUBLIC API - RESPONSE GET /events GET /events/{id}
+ * <p>
+ * PRIVATE API - RESPONSE POST /users/{userId}/events GET /users/{userId}/events/{eventId} PATCH
+ * /users/{userId}/events/{eventId}
  */
 @Data
+@Accessors(chain = true)
 public class EventFullDto {
 
   private String annotation;
@@ -34,11 +31,12 @@ public class EventFullDto {
 
   private String description;
 
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime eventDate;
 
   private Long id;
-// TODO Добавить как будет доступно
-//  private UserShortDto initiator;
+
+  private UserShortDto initiator;
 
   private Location location;
 
@@ -55,6 +53,6 @@ public class EventFullDto {
 
   private String title;
 
-  private Integer views;
+  private Long views;
 
 }
