@@ -3,6 +3,7 @@ package ru.practicum.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import lombok.Data;
+import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.event.model.Location;
 
 /**
@@ -23,8 +24,8 @@ import ru.practicum.event.model.Location;
 public class EventFullDto {
 
   private String annotation;
-// TODO Добавить как будет доступно
-//  private CategoryDto category;
+
+  private CategoryDto category;
 
   private Integer confirmedRequests;
 

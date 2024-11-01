@@ -3,17 +3,16 @@ package ru.practicum.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import lombok.Data;
+import ru.practicum.category.dto.CategoryDto;
 
 /**
- * PRIVATE API - RESPONSE
- * GET /users/{userId}/events
+ * PRIVATE API - RESPONSE GET /users/{userId}/events
  */
 @Data
 public class EventShortDto {
 
   private String annotation;
-  // TODO Добавить как будет доступно
-  //  private CategoryDto category;
+  private CategoryDto category;
   private Long confirmedRequests;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime eventDate;

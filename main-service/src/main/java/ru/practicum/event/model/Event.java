@@ -18,6 +18,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.category.model.Category;
 import ru.practicum.event.enums.State;
 
 @Entity
@@ -37,10 +38,9 @@ public class Event {
   @Column(name = "text", length = 2000, nullable = false)
   private String annotation;
 
-  // TODO Добавить как будет доступно
-  //  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  //  @JoinColumn(name = "category_id")
-  //  private Category category;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "category_id")
+  private Category category;
 
   @Column(name = "description", length = 7000, nullable = false)
   private String description;
