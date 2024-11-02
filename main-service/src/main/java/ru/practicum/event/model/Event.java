@@ -18,8 +18,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.enums.State;
+import ru.practicum.user.model.User;
 
 @Entity
 @Table(name = "event")
@@ -28,6 +30,7 @@ import ru.practicum.event.enums.State;
 @EqualsAndHashCode(of = "id")
 @NoArgsConstructor
 @AllArgsConstructor
+@Accessors(chain = true)
 public class Event {
 
   @Id
@@ -35,7 +38,7 @@ public class Event {
   @Column(updatable = false, nullable = false)
   private Long id;
 
-  @Column(name = "text", length = 2000, nullable = false)
+  @Column(name = "annotation", length = 2000, nullable = false)
   private String annotation;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -58,10 +61,9 @@ public class Event {
   @Column(name = "created_on", nullable = false)
   private LocalDateTime createdOn;
 
-  // TODO Добавить как будет доступно
-  //  @ManyToOne(fetch = FetchType.LAZY)
-  //  @JoinColumn(name = "user_id",nullable = false)
-  //  private User initiator;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "initiator_id", nullable = false)
+  private User initiator;
 
   @Column
   private Integer participantLimit = 0;
@@ -83,5 +85,5 @@ public class Event {
   private Integer confirmedRequests = 0;
 
   @Transient
-  private Long views;
+  private Long views = 0L;
 }

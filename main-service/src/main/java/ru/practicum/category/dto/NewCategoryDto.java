@@ -12,6 +12,6 @@ import lombok.experimental.Accessors;
 public class NewCategoryDto {
 
     @NotBlank
-    @Size(max = 255, message = "name should not exceed max length.")
+    @Size(min = 1, max = 50, message = "name should not exceed max length.")
     private String name;
 }

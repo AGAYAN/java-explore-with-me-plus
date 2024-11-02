@@ -9,10 +9,10 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.Data;
 import ru.practicum.event.model.Location;
+import ru.practicum.validation.MinTwoHoursInFuture;
 
 /**
- * PRIVATE API - REQUEST body
- * POST /users/{userId}/events
+ * PRIVATE API - REQUEST body POST /users/{userId}/events
  */
 @Data
 public class NewEventDto {
@@ -23,12 +23,13 @@ public class NewEventDto {
 
   @NotNull(message = "Category is required.")
   @Positive(message = "Category ID must be a positive number.")
-  private Integer category;
+  private Long category;
 
   @NotBlank(message = "Description is required and cannot be blank.")
   @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters.")
   private String description;
 
+  @MinTwoHoursInFuture(message = "Event date must be at least two hours in the future.")
   @NotNull(message = "Event date is required.")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime eventDate;
