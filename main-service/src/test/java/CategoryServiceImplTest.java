@@ -128,7 +128,9 @@ class CategoryServiceImplTest {
     void updateCategory_ShouldThrowException_WhenNameExists() {
         NewCategoryDto newCategoryDto = new NewCategoryDto();
         newCategoryDto.setName("Duplicate Category");
+        Category category = new Category().setName("Category");
 
+        when(repository.findById(1L)).thenReturn(Optional.of(category));
         when(repository.existsByName(newCategoryDto.getName())).thenReturn(true);
 
         assertThrows(AlreadyExistsException.class, () -> categoryService.updateCategory(1L, newCategoryDto));
@@ -139,7 +141,6 @@ class CategoryServiceImplTest {
         NewCategoryDto newCategoryDto = new NewCategoryDto();
         newCategoryDto.setName("Updated Category");
 
-        when(repository.existsByName(newCategoryDto.getName())).thenReturn(false);
         when(repository.findById(anyLong())).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () -> categoryService.updateCategory(1L, newCategoryDto));
