@@ -32,6 +32,12 @@ public class ErrorHandler {
     return buildErrorResponse(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
   }
 
+  @ExceptionHandler(ConflictException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ResponseEntity<ApiError> handleAlreadyExistsException(final ConflictException exception) {
+    return buildErrorResponse(exception, HttpStatus.CONFLICT, exception.getMessage());
+  }
+
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   public ResponseEntity<ApiError> handleGenericException(final Exception e) {
