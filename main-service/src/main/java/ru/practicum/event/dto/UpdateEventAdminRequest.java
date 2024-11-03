@@ -4,14 +4,18 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import lombok.Data;
+
+import lombok.*;
 import ru.practicum.event.model.Location;
 import ru.practicum.validation.MinTwoHoursInFuture;
 
 /**
  * ADMIN API - REQUEST body PATCH admin/events/{eventId}
  */
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UpdateEventAdminRequest {
 
   @Size(min = 20, max = 2000, message = "Annotation must be between 20 and 2000 characters.")
