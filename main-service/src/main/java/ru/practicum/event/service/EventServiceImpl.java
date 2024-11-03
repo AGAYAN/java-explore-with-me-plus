@@ -126,7 +126,7 @@ public class EventServiceImpl implements EventService {
     String end = LocalDateTime.now().toString();
     log.debug("Get views for event with id={}", eventId);
     ViewStatsDto[] views = statsClient.getStats(start, end, new String[]{"/events/" + eventId}, true);
-    ///TODO думаю что можно оставить как есть пока не нашёл как сделать лучше
+    ///TODO думаю что можно оставить как есть пока не нашёл как сделать лучше.
     if (views == null) {
       event.setViews(views[0].getHits());
     } else {
