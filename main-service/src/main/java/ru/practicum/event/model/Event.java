@@ -1,6 +1,7 @@
 package ru.practicum.event.model;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,6 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -51,8 +53,8 @@ public class Event {
   @Column(name = "event_date", nullable = false)
   private LocalDateTime eventDate;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "location_id", nullable = false)
+  @Embedded
+  @NotNull
   private Location location;
 
   @Column
