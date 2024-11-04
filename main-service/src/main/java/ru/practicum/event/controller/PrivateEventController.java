@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.event.dto.UpdateEventUserRequest;
 import ru.practicum.event.service.EventService;
 
 @RestController
@@ -61,6 +63,19 @@ public class PrivateEventController {
     final EventFullDto result = eventService.getEvent(userId,eventId);
     log.info("Sending event ID={} data.", result.getId());
     return ResponseEntity.ok(result);
+  }
+
+  @PatchMapping("/{eventId}")
+  public ResponseEntity<EventFullDto> updateEvent(
+      @PathVariable("userId") @NotNull @Positive Long userId,
+      @PathVariable("eventId")@NotNull @Positive Long eventId,
+      @Validated @RequestBody UpdateEventUserRequest eventDto) {
+    log.info("Request received Patch /users/{}/events/{} with data {}.",
+        userId, eventId,eventDto);
+    final EventFullDto eventUpdated = eventService.updateEvent(userId, eventId, eventDto);
+    log.info("Event updated successfully with ID={}.", eventUpdated.getId());
+
+    return ResponseEntity.status(HttpStatus.OK).body(eventUpdated);
   }
 
 }

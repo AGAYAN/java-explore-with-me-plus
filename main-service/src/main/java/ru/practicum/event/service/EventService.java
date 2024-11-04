@@ -6,8 +6,7 @@ import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.GetEventAdminRequest;
 import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventAdminRequest;
-
-import java.util.List;
+import ru.practicum.event.dto.UpdateEventUserRequest;
 
 public interface EventService {
 
@@ -17,9 +16,12 @@ public interface EventService {
 
   EventFullDto getEvent(Long initiatorId, Long eventId);
 
-//  EventFullDto addEvent(Long userId, NewEventDto eventDto);
-
+  //TODO rename it to the getEvent(GetEventAdminRequest param)
   List<EventFullDto> adminGetEvent(GetEventAdminRequest param);
 
+  //TODO  rename it to updateEvent(long eventId, UpdateEventAdminRequest param)
   EventFullDto adminPatchEvent(long eventId, UpdateEventAdminRequest param);
+
+  EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto);
+
 }
