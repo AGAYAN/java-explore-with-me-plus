@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.exception.AlreadyExistsException;
+import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mappers.UserMapper;
 import ru.practicum.user.model.User;
@@ -31,14 +32,14 @@ public class UserServiceImpl implements UserService {
     return UserMapper.mapToUserDto(save(user));
   }
 
-    @Override
-    @Transactional
-    public void deleteUser(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new EntityNotFoundException("User not found with id: " + userId);
-        }
-        userRepository.deleteById(userId);
+  @Override
+  @Transactional
+  public void deleteUser(Long userId) {
+    if (!userRepository.existsById(userId)) {
+      throw new EntityNotFoundException("User not found with id: " + userId);
     }
+    userRepository.deleteById(userId);
+  }
 
   @Override
   @Transactional
@@ -57,14 +58,32 @@ public class UserServiceImpl implements UserService {
         .collect(Collectors.toList());
   }
 
-    private User save(User user) {
-        log.debug("Saving user with email: {}", user.getEmail());
+  @Override
+  public UserDto getUser(Long userId) {
+    User user = userRepository.findById(userId)
+        .orElseThrow(() ->
+            new EntityNotFoundException("User not found with id: " + userId));
+    return UserMapper.mapToUserDto(user);
+  }
 
-        try {
-            return userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Failed to save user. Email already exists: {}", user.getEmail());
-            throw new AlreadyExistsException("Email already exists.");
-        }
+  @Override
+  public void validateUserExist(final Long id) {
+    log.debug("Validating user id {} is not null and exist in DB", id);
+    if (id == null || !userRepository.existsById(id)) {
+      log.warn("Validation User with ID = {} is not null and exists in DB failed.", id);
+      throw new NotFoundException("User not found.");
     }
+    log.debug("Success: user ID {} is not null and exist in DB.", id);
+  }
+
+  private User save(User user) {
+    log.debug("Saving user with email: {}", user.getEmail());
+
+    try {
+      return userRepository.save(user);
+    } catch (DataIntegrityViolationException e) {
+      log.warn("Failed to save user. Email already exists: {}", user.getEmail());
+      throw new AlreadyExistsException("Email already exists.");
+    }
+  }
 }
