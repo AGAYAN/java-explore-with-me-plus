@@ -5,15 +5,14 @@ import org.springframework.stereotype.Service;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.NotFoundException;
-import ru.practicum.request.Model.ParticipationRequest;
-import ru.practicum.request.Model.StatusRequest;
+import ru.practicum.request.model.ParticipationRequest;
+import ru.practicum.request.model.StatusRequest;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -31,7 +30,16 @@ public class RequestServiceImpl implements RequestService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Нету такого event"));
 
+
         ParticipationRequest participationRequest = RequestMapper.mapToUser(new ParticipationRequestDto(), user, event);
+
+        if(!(participationRequest.getStatus() == StatusRequest.PENDING)) {
+            throw new NotFoundException("Заявка должна быть PENDING");
+        }
+
+        if (participationRequest.getId().equals(event.getInitiator().getId())) {
+            throw new NotFoundException("Запрос на свое событие запредено");
+        }
 
         ParticipationRequest savedRequest = requestRepository.save(participationRequest);
 
@@ -58,12 +66,14 @@ public class RequestServiceImpl implements RequestService {
                 .orElseThrow(() -> new NotFoundException("Нету такого запроса"));
 
         if(!userId.equals(participationRequest.getRequester().getId())) {
-            throw new NotFoundException("Отменять может только владелец");
+            throw new NotFoundException("Отменить может только владелец");
         }
 
         if(participationRequest.getStatus() == StatusRequest.PENDING) {
             participationRequest.setStatus(StatusRequest.CANCELED);
         }
+
+        requestRepository.save(participationRequest);
 
         return RequestMapper.mapToUserDto(participationRequest);
     }
@@ -81,6 +91,5 @@ public class RequestServiceImpl implements RequestService {
                 .map(RequestMapper::mapToUserDto)
                 .toList();
     }
-
 
 }

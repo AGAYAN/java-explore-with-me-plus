@@ -3,8 +3,7 @@ package ru.practicum.request.mapper;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.event.model.Event;
-import ru.practicum.request.Model.ParticipationRequest;
-import ru.practicum.request.Model.StatusRequest;
+import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.user.model.User;
 
@@ -37,4 +36,5 @@ public class RequestMapper {
 
 
     }
+
 }

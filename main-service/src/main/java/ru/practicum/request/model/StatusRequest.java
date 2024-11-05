@@ -1,7 +1,6 @@
-package ru.practicum.request.Model;
+package ru.practicum.request.model;
 
 public enum StatusRequest {
-    CONFIRMED,
     PENDING,
     REJECTED,
     CANCELED

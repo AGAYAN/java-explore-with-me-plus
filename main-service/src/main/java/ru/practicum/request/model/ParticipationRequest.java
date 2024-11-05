@@ -1,6 +1,5 @@
-package ru.practicum.request.Model;
+package ru.practicum.request.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
