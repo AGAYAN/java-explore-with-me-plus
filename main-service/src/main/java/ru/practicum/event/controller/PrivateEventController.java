@@ -74,7 +74,6 @@ public class PrivateEventController {
         userId, eventId,eventDto);
     final EventFullDto eventUpdated = eventService.updateEvent(userId, eventId, eventDto);
     log.info("Event updated successfully with ID={}.", eventUpdated.getId());
-
     return ResponseEntity.status(HttpStatus.OK).body(eventUpdated);
   }
 
