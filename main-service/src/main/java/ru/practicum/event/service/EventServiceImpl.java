@@ -1,6 +1,5 @@
 package ru.practicum.event.service;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +18,7 @@ import ru.practicum.event.enums.StateAction;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.Location;
+import ru.practicum.event.repository.EventQueryRepository;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.event.repository.LocationRepository;
 import ru.practicum.exception.ConflictException;
@@ -34,6 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
 
+  private final EventQueryRepository eventRepositoryImpl;
   private final EventRepository eventRepository;
   private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
@@ -57,15 +58,15 @@ public class EventServiceImpl implements EventService {
   public List<EventFullDto> adminGetEvent(GetEventAdminRequest param) {
     log.info("Received request GET /admin/events with param {}", param);
     Pageable pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize());
-    Page<EventFullDto> eventsPage = eventRepository.adminFindEvents(
+      return eventRepositoryImpl.adminFindEvents(
             param.getUsers(),
             param.getStates(),
             param.getCategories(),
             param.getRangeStart(),
             param.getRangeEnd(),
-            pageable
+            param.getFrom(),
+            param.getSize()
     );
-    return eventsPage.getContent();
   }
 
   ///TODO жду реализации GET events/ api с досутпом PUBLIC
