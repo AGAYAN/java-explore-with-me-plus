@@ -8,12 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import ru.practicum.EndPointHitDto;
 import ru.practicum.StatsClient;
 import ru.practicum.ViewStatsDto;
 import ru.practicum.category.dto.CategoryDto;
@@ -21,16 +22,12 @@ import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.category.service.CategoryService;
-import ru.practicum.event.dto.EventFullDto;
-import ru.practicum.event.dto.EventShortDto;
-import ru.practicum.event.dto.GetEventAdminRequest;
-import ru.practicum.event.dto.NewEventDto;
-import ru.practicum.event.dto.UpdateEventAdminRequest;
-import ru.practicum.event.dto.UpdateEventUserRequest;
+import ru.practicum.event.dto.*;
 import ru.practicum.event.enums.State;
 import ru.practicum.event.enums.StateAction;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.repository.EventQueryRepository;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
@@ -44,6 +41,7 @@ import ru.practicum.user.service.UserService;
 public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
+  private final EventQueryRepository eventRepositoryImpl;
   private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
   private final StatsClient statsClient;
@@ -105,6 +103,37 @@ public class EventServiceImpl implements EventService {
     return EventMapper.toFullDto(eventToUpdate);
   }
 
+  @Override
+  public List<EventShortDto> getEvents(GetEventPublicParam param, HttpServletRequest request) {
+    log.debug("Fetching events with params {}", param);
+
+    EndPointHitDto hit = new EndPointHitDto()
+            .setApp("explore-with-me")
+            .setUri(request.getRequestURI())
+            .setIp(request.getRemoteAddr())
+            .setRequestTime(LocalDateTime.now());
+
+    statsClient.saveHit(hit);
+
+    return eventRepositoryImpl.publicGetEvents(
+            param.getText(),
+            param.getCategories(),
+            param.getPaid(),
+            param.getRangeStart(),
+            param.getRangeEnd(),
+            param.getOnlyAvailable(),
+            param.getSort(),
+            param.getFrom(),
+            param.getSize());
+  }
+
+  @Override
+  public EventFullDto getEventsById(Long eventId) {
+    log.debug("Fetching event ID={}.", eventId);
+      return EventMapper.toFullDto(eventRepository.findById(eventId).orElseThrow(() ->
+              new NotFoundException("Event with id " + eventId + " not found")));
+  }
+
   /**
    * Retrieves All existed in DB events (performed by ADMIN).
    */
@@ -112,16 +141,15 @@ public class EventServiceImpl implements EventService {
   @Override
   public List<EventFullDto> adminGetEvent(GetEventAdminRequest param) {
     log.info("Received request GET /admin/events with param {}", param);
-    Pageable pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize());
-    Page<EventFullDto> eventsPage = eventRepository.adminFindEvents(
+      return eventRepositoryImpl.adminFindEvents(
         param.getUsers(),
         param.getStates(),
         param.getCategories(),
         param.getRangeStart(),
         param.getRangeEnd(),
-        pageable
+        param.getFrom(),
+        param.getSize()
     );
-    return eventsPage.getContent();
   }
 
   /**

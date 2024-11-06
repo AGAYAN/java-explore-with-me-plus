@@ -1,12 +1,9 @@
 package ru.practicum.event.service;
 
 import java.util.List;
-import ru.practicum.event.dto.EventFullDto;
-import ru.practicum.event.dto.EventShortDto;
-import ru.practicum.event.dto.GetEventAdminRequest;
-import ru.practicum.event.dto.NewEventDto;
-import ru.practicum.event.dto.UpdateEventAdminRequest;
-import ru.practicum.event.dto.UpdateEventUserRequest;
+
+import jakarta.servlet.http.HttpServletRequest;
+import ru.practicum.event.dto.*;
 
 public interface EventService {
 
@@ -23,5 +20,9 @@ public interface EventService {
   EventFullDto adminPatchEvent(long eventId, UpdateEventAdminRequest param);
 
   EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto);
+
+  List<EventShortDto> getEvents(GetEventPublicParam param, HttpServletRequest request);
+
+  EventFullDto getEventsById(Long eventId);
 
 }
