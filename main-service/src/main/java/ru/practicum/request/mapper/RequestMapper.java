@@ -13,8 +13,8 @@ import java.util.Objects;
 @Slf4j
 public class RequestMapper {
 
-    public static ParticipationRequest mapToUser(final ParticipationRequestDto participationRequest, final User user, final Event event) {
-        log.debug("Mapping participationRequest {} to UserDto.", participationRequest);
+    public static ParticipationRequest mapTo(final ParticipationRequestDto participationRequest, final User user, final Event event) {
+        log.debug("Mapping participationRequest {} to Request.", participationRequest);
         Objects.requireNonNull(participationRequest);
         return new ParticipationRequest()
                 .setId(participationRequest.getId())
@@ -24,8 +24,8 @@ public class RequestMapper {
 
     }
 
-    public static ParticipationRequestDto mapToUserDto(final ParticipationRequest participationRequest) {
-        log.debug("Mapping participationRequestDto {} to UserDto.", participationRequest);
+    public static ParticipationRequestDto mapToDto(final ParticipationRequest participationRequest) {
+        log.debug("Mapping participationRequestDto {} to RequestDto.", participationRequest);
         Objects.requireNonNull(participationRequest);
         return new ParticipationRequestDto()
                 .setId(participationRequest.getId())
