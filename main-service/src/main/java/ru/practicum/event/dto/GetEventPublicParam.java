@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import ru.practicum.event.enums.SortType;
 
 import java.time.LocalDateTime;
@@ -17,6 +18,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Accessors(chain = true)
 public class GetEventPublicParam {
 
     @Size(max = 2000, message = "Search text must be up to 2000 characters.")

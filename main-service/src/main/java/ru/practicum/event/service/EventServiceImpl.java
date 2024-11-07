@@ -128,8 +128,17 @@ public class EventServiceImpl implements EventService {
   }
 
   @Override
-  public EventFullDto getEventsById(Long eventId) {
+  public EventFullDto getEventsById(Long eventId, HttpServletRequest request) {
     log.debug("Fetching event ID={}.", eventId);
+
+    EndPointHitDto hit = new EndPointHitDto()
+            .setApp("explore-with-me")
+            .setUri(request.getRequestURI())
+            .setIp(request.getRemoteAddr())
+            .setRequestTime(LocalDateTime.now());
+
+    statsClient.saveHit(hit);
+
       return EventMapper.toFullDto(eventRepository.findById(eventId).orElseThrow(() ->
               new NotFoundException("Event with id " + eventId + " not found")));
   }

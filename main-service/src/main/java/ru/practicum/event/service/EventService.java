@@ -23,6 +23,6 @@ public interface EventService {
 
   List<EventShortDto> getEvents(GetEventPublicParam param, HttpServletRequest request);
 
-  EventFullDto getEventsById(Long eventId);
+  EventFullDto getEventsById(Long eventId, HttpServletRequest request);
 
 }

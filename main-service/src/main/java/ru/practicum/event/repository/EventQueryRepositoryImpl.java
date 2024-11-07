@@ -1,13 +1,16 @@
 package ru.practicum.event.repository;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.*;
+import org.apache.catalina.connector.Request;
 import org.springframework.stereotype.Repository;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
+import ru.practicum.event.enums.State;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.Location;
 import ru.practicum.user.dto.UserShortDto;
@@ -15,7 +18,10 @@ import ru.practicum.user.model.User;
 import ru.practicum.event.enums.SortType;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 public class EventQueryRepositoryImpl implements EventQueryRepository {
@@ -98,6 +104,7 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         return typedQuery.getResultList();
     }
 
+    ///TODO Ждать пока будет готова реализация с CONFIRMED request
     @Override
     public List<EventShortDto> publicGetEvents(final String text,
                                                final List<Long> categories,
@@ -116,7 +123,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         Join<Event, Category> categoryJoin = eventTable.join("category");
         Join<Event, User> initiatorJoin = eventTable.join("initiator");
 
-        // Заменяем на поля, которые соответствуют EventShortDto
         query.select(cb.construct(
                 EventShortDto.class,
                 eventTable.get("annotation"),
@@ -124,7 +130,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                         categoryJoin.get("id"),
                         categoryJoin.get("name")
                 ),
-                eventTable.get("confirmedRequests"),
                 eventTable.get("eventDate"),
                 eventTable.get("id"),
                 cb.construct(UserShortDto.class,
@@ -137,11 +142,8 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         ));
 
         Predicate predicate = cb.conjunction();
+        predicate = cb.and(predicate, cb.equal(eventTable.get("state"), State.PUBLISHED));
 
-        // Условие: только опубликованные события
-        predicate = cb.and(predicate, cb.equal(eventTable.get("state"), "PUBLISHED"));
-
-        // Поиск по тексту в аннотации и описании (без учета регистра)
         if (text != null && !text.trim().isEmpty()) {
             String pattern = "%" + text.trim().toLowerCase() + "%";
             predicate = cb.and(predicate,
@@ -152,37 +154,26 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
             );
         }
 
-        // Фильтр по категориям
         if (categories != null && !categories.isEmpty()) {
             predicate = cb.and(predicate, categoryJoin.get("id").in(categories));
         }
 
-        // Фильтр по платным/бесплатным событиям
         if (paid != null) {
             predicate = cb.and(predicate, cb.equal(eventTable.get("paid"), paid));
         }
 
-        // Фильтрация по диапазону дат
         LocalDateTime now = LocalDateTime.now();
         if (rangeStart != null) {
             predicate = cb.and(predicate, cb.greaterThanOrEqualTo(eventTable.get("eventDate"), rangeStart));
         } else {
-            predicate = cb.and(predicate, cb.greaterThanOrEqualTo(eventTable.get("eventDate"), now.plusHours(1L)));
+            predicate = cb.and(predicate, cb.greaterThanOrEqualTo(eventTable.get("eventDate"), now));
         }
         if (rangeEnd != null) {
             predicate = cb.and(predicate, cb.lessThanOrEqualTo(eventTable.get("eventDate"), rangeEnd));
         }
 
-        // Только события с доступными местами (если onlyAvailable == true)
-        if (onlyAvailable != null && onlyAvailable) {
-            predicate = cb.and(predicate,
-                    cb.lessThan(eventTable.get("confirmedRequests"), eventTable.get("participantLimit"))
-            );
-        }
-
         query.where(predicate);
 
-        // Сортировка по дате события или по количеству просмотров
         if (sort != null) {
             if (sort.equals(SortType.EVENT_DATE)) {
                 query.orderBy(cb.asc(eventTable.get("eventDate")));
@@ -191,11 +182,52 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
             }
         }
 
-        // Параметры пагинации
         TypedQuery<EventShortDto> typedQuery = entityManager.createQuery(query);
         typedQuery.setFirstResult(from);
         typedQuery.setMaxResults(size);
 
-        return typedQuery.getResultList();
+        List<EventShortDto> resultList = typedQuery.getResultList();
+
+        List<Long> eventIds = resultList.stream()
+                .map(EventShortDto::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequests(eventIds);
+
+        resultList.forEach(event -> event.setConfirmedRequests(Math.
+                toIntExact(confirmedRequestsMap.getOrDefault(event.getId(), 0L))));
+
+
+        return resultList;
     }
+
+    private Map<Long, Long> getConfirmedRequests(List<Long> eventIds) {
+        if (eventIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        // Запрос для подсчета confirmedRequests по каждому событию
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        CriteriaQuery<Tuple> countQuery = cb.createTupleQuery();
+        Root<Request> requestTable = countQuery.from(Request.class);
+
+        countQuery.multiselect(
+                requestTable.get("event").get("id"),
+                cb.count(requestTable).alias("confirmedCount")
+        );
+        countQuery.where(
+                requestTable.get("event").get("id").in(eventIds)//,
+//                cb.equal(requestTable.get("status"), StatusRequest.CONFIRMED)
+        );
+        countQuery.groupBy(requestTable.get("event").get("id"));
+
+        List<Tuple> results = entityManager.createQuery(countQuery).getResultList();
+
+        return results.stream()
+                .collect(Collectors.toMap(
+                        tuple -> tuple.get(0, Long.class),
+                        tuple -> tuple.get(1, Long.class)
+                ));
+    }
+
 }
