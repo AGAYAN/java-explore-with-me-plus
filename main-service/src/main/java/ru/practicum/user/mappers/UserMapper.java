@@ -24,6 +24,7 @@ public class UserMapper {
     log.debug("Mapping UserDto {} to User.", dto);
     Objects.requireNonNull(dto);
     return new User()
+        .setId(dto.getId())
         .setName(dto.getName())
         .setEmail(dto.getEmail());
   }

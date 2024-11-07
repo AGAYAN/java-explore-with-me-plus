@@ -5,8 +5,10 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.Data;
+import ru.practicum.event.enums.Role;
 import ru.practicum.event.model.Location;
 import ru.practicum.validation.MinTwoHoursInFuture;
+import ru.practicum.validation.ValidStateAction;
 
 /**
  * PRIVATE API - REQUEST body PATCH /users/{userId}/events/{eventId}
@@ -36,10 +38,10 @@ public class UpdateEventUserRequest {
 
   private Boolean requestModeration;
 
-  //  TODO @ValidStateAction
+  @ValidStateAction(role = Role.USER)
   private String stateAction;
 
   @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters.")
   private String title;
 }
-//TODO Подумаьть: уж очень сильно много совпадений в полях с UpdateEventAdminRequest????
+

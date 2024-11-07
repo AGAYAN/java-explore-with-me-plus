@@ -6,8 +6,10 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 import lombok.*;
+import ru.practicum.event.enums.Role;
 import ru.practicum.event.model.Location;
 import ru.practicum.validation.MinTwoHoursInFuture;
+import ru.practicum.validation.ValidStateAction;
 
 /**
  * ADMIN API - REQUEST body PATCH admin/events/{eventId}
@@ -39,7 +41,8 @@ public class UpdateEventAdminRequest {
   private Integer participantLimit;
 
   private Boolean requestModeration;
-  //  TODO @ValidStateAction
+
+  @ValidStateAction(role = Role.ADMIN)
   private String stateAction;
 
   @Size(min = 3, max = 120, message = "Title must be between 3 and 120 characters.")
