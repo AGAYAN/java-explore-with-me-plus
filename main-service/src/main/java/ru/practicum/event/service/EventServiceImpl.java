@@ -2,7 +2,9 @@ package ru.practicum.event.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.StatsClient;
 import ru.practicum.ViewStatsDto;
 import ru.practicum.category.dto.CategoryDto;
@@ -22,34 +25,42 @@ import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.event.dto.EventFullDto;
+import ru.practicum.event.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.event.dto.EventRequestStatusUpdateResult;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.GetEventAdminRequest;
 import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.event.dto.UpdateEventAdminRequest;
 import ru.practicum.event.dto.UpdateEventUserRequest;
 import ru.practicum.event.enums.State;
 import ru.practicum.event.enums.StateAction;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
+import ru.practicum.request.mapper.RequestMapper;
+import ru.practicum.request.model.StatusRequest;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
+import ru.practicum.request.model.ParticipationRequest;
+import ru.practicum.request.repository.RequestRepository;
+import ru.practicum.request.service.RequestService;
 import ru.practicum.user.dto.UserDto;
-import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.service.UserService;
 
+@Transactional
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
-  private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
-  private final StatsClient statsClient;
-
   private final UserService userService;
   private final CategoryService categoryService;
+  private final RequestService requestService;
+  private final RequestRepository requestRepository;
+  private final StatsClient statsClient;
 
   /**
    * Adds a new event initiated by a user.
@@ -69,14 +80,15 @@ public class EventServiceImpl implements EventService {
   /**
    * Retries all events created by current user.
    */
+  @Transactional(readOnly = true)
   @Override
   public List<EventShortDto> getEvents(final Long initiatorId, final Integer from,
                                        final Integer size) {
     log.debug("Fetching events posted by user with ID={}.", initiatorId);
-    validateUser(initiatorId);
+    validateUserExist(initiatorId);
     final PageRequest page = PageRequest.of(from / size, size);
     final List<Event> events = eventRepository.findAllByInitiatorId(initiatorId, page).getContent();
-    setConfirmedRequests(events);
+    setConfirmedRequests(events); //TODO modify Query, so it will return all data?
     setViews(events);
     return EventMapper.toShortDto(events);
   }
@@ -84,6 +96,7 @@ public class EventServiceImpl implements EventService {
   /**
    * Retrieves complete data about specific event created by current user.
    */
+  @Transactional(readOnly = true)
   @Override
   public EventFullDto getEvent(final Long initiatorId, final Long eventId) {
     log.debug("Fetching event ID={}, posted by user with ID={}.", eventId, initiatorId);
@@ -92,14 +105,32 @@ public class EventServiceImpl implements EventService {
   }
 
   /**
+   * Retrieves information about participation requests for the current user's event.
+   */
+  @Transactional(readOnly = true)
+  @Override
+  public List<ParticipationRequestDto> getRequests(final Long initiatorId, final Long eventId) {
+    log.debug("Retrieving event participants for event ID={}, posted by user ID={}.", eventId, initiatorId);
+    //method provides validation user exists and event exists
+    validateUserExist(initiatorId,eventId);
+    return RequestMapper.mapToDto(requestRepository.findAllByEventIdAndEventInitiatorId(eventId, initiatorId));
+  }
+
+  /**
+   * Changes the request status into [CONFIRMED, REJECTED] of participation for the current user's event.
+   */
+
+
+
+  /**
    * Edit an event added by the current user.
    */
   @Override
-  public EventFullDto updateEvent(final Long userId, final Long eventId, final UpdateEventUserRequest eventDto) {
+  public EventFullDto updateEvent(final Long initiatorId, final Long eventId, final UpdateEventUserRequest eventDto) {
     log.debug("Updating event ID={}, posted by user with ID={} with data {}.",
-        eventId, userId,eventDto);
-    final Event eventToUpdate = getEnrichedEvent(userId, eventId);
-    validateEventUpdatable(eventToUpdate);
+        eventId, initiatorId,eventDto);
+    final Event eventToUpdate = getEnrichedEvent(initiatorId, eventId);
+    validateUpdatable(eventToUpdate);
     patchEventFields(eventToUpdate, eventDto);
     eventRepository.save(eventToUpdate);
     return EventMapper.toFullDto(eventToUpdate);
@@ -109,6 +140,7 @@ public class EventServiceImpl implements EventService {
    * Retrieves All existed in DB events (performed by ADMIN).
    */
   //TODO rename it to the getEvent(GetEventAdminRequest param)
+  @Transactional(readOnly = true)
   @Override
   public List<EventFullDto> adminGetEvent(GetEventAdminRequest param) {
     log.info("Received request GET /admin/events with param {}", param);
@@ -152,6 +184,8 @@ public class EventServiceImpl implements EventService {
         throw new ConflictException("Cannot reject the event because it is already published");
       }
       event.setState(StateAction.fromString(param.getStateAction()).getState());
+      //TODO set the publishedOn property
+      event.setPublishedOn(LocalDateTime.now());
     }
 
     if (param.getAnnotation() != null) {
@@ -201,16 +235,24 @@ public class EventServiceImpl implements EventService {
     return EventMapper.toFullDto(eventRepository.save(event));
   }
 
+  /**
+   * Gets specified Event created by User with given ID, with confirmedRequests and views data set.
+   */
   private Event getEnrichedEvent(final Long initiatorId, final Long eventId) {
-    log.debug("Fetching Event ID={} created bu user ID={}.",eventId, initiatorId);
-    final Event event = eventRepository.findByIdAndInitiatorId(eventId, initiatorId)
-        .orElseThrow(() -> {
-          log.warn("Event ID={} with initiator ID={} not found.", eventId, initiatorId);
-          return new NotFoundException("Event with was not found.");
-        });
-    setConfirmedRequests(List.of(event));
+    final Event event = fetchEvent(eventId, initiatorId);
     setViews(List.of(event));
     return event;
+  }
+
+  private Event fetchEvent(final Long eventId, final Long initiatorId) {
+    log.debug("Fetching An event ID{} with initiator ID {}.", eventId, initiatorId);
+    return eventRepository.findByIdAndInitiatorId(eventId, initiatorId)
+        .map(result -> result.getEvent().setConfirmedRequests(result.getConfirmedRequests()))
+        .orElseThrow(
+        () -> {
+          log.warn("Event ID={} with initiator ID={} not found.", eventId, initiatorId);
+          return new NotFoundException("Event was not found.");
+        });
   }
 
   private void setViews(final List<Event> events) {
@@ -247,30 +289,27 @@ public class EventServiceImpl implements EventService {
     return String.format("/events/%d", eventId);
   }
 
-  //TODO waiting for request api is ready to fix following
   private void setConfirmedRequests(final List<Event> events) {
-    log.debug("Setting Confirmed requests to the events list.");
+    log.debug("Setting Confirmed requests to the events list {}.", events);
     if (events.isEmpty()) {
       log.debug("Events list is empty.");
       return;
     }
-    //extract List of event IDs
     final List<Long> eventIds = events.stream().map(Event::getId).toList();
-    // get all request data with conditions:
-    // 1. eventId in (eventIds),
-    // 2. status == CONFIRMED
-    // group them by eventId and save each value eventId in the List<Ivents>
-    //And result write into Map<eventId,List<requests data>>:
-//    final Map<Long,ParticipationRequest> confirmedRequests =
-//        requestRepository.findAllByEventIdInAndStatus(eventIds, RequestStatus.CONFIRMED)
-//            .stream()
-//            .collect(Collectors.groupingBy(participantRequest -> participantRequest.getEvent().getId()));
-//    events.forEach(event -> event.getConfirmedRequests(confirmedRequests.get(event.getId()).size));
-    log.debug("Confirmed requests has set successfully.");
+    final Map<Long, List<ParticipationRequest>> confirmedRequests =
+        requestRepository.findAllByEventIdInAndStatus(eventIds, StatusRequest.CONFIRMED)
+            .stream()
+            .collect(Collectors.groupingBy(
+                participantRequest -> participantRequest.getEvent().getId()));
+
+    events.forEach(event ->
+      event.setConfirmedRequests(
+          confirmedRequests.getOrDefault(event.getId(), List.of()).size()));
+    log.debug("Confirmed requests has set successfully to the events with IDs {}.", eventIds);
   }
 
   private void patchEventFields(final Event target, final UpdateEventUserRequest dataSource) {
-    log.debug("Apply the patch at Event fields.");
+    log.debug("Apply the patch on Event fields.");
     Optional.ofNullable(dataSource.getAnnotation()).ifPresent(target::setAnnotation);
     Optional.ofNullable(dataSource.getDescription()).ifPresent(target::setDescription);
     Optional.ofNullable(dataSource.getEventDate()).ifPresent(target::setEventDate);
@@ -283,19 +322,18 @@ public class EventServiceImpl implements EventService {
     Optional.ofNullable(dataSource.getCategory()).ifPresent(categoryId ->
         target.setCategory(CategoryMapper.toCategory(categoryService.getCategoryById(categoryId))));
 
-    Optional.ofNullable(dataSource.getStateAction()).ifPresent(stateAction -> {
-      target.setState(StateAction.fromString(stateAction).getState());
-
-    });
+    Optional.ofNullable(dataSource.getStateAction())
+        .ifPresent(stateAction ->
+            target.setState(StateAction.fromString(stateAction).getState()));
   }
 
-  private void validateEventUpdatable(final Event event) {
+  private void validateUpdatable(final Event event) {
     log.debug("Validate event date at least is two hours ahead and it is not published.");
     validateEventDate(event.getEventDate());
     validateEventState(event);
   }
 
-  private void validateEventState(Event event) {
+  private void validateEventState(final Event event) {
     if (State.PUBLISHED.equals(event.getState())) {
       throw new ConflictException("Only pending or canceled events can be changed");
     }
@@ -308,8 +346,96 @@ public class EventServiceImpl implements EventService {
     }
   }
 
-  private void validateUser(final Long userId) {
+  private void validateUserExist(final Long userId, final Long eventId) {
+    validateUserExist(userId);
+    if (!eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
+      log.warn("Event ID={} with intiator ID={} not exists.",userId,eventId);
+      throw new NotFoundException("Event with current initiator not found.");
+    }
+  }
+
+  private void validateUserExist(final Long userId) {
     userService.validateUserExist(userId);
+  }
+
+  @Override
+  public EventRequestStatusUpdateResult updateRequestsStatus(
+      final Long initiatorId,
+      final Long eventId,
+      final EventRequestStatusUpdateRequest updateStatusDto) {
+    log.debug("Updating participation requests {} for the event {} created by user {} with statusRequest {}",
+        updateStatusDto.getRequestIds(),eventId,initiatorId,updateStatusDto.getStatus());
+    validateUserExist(initiatorId);
+
+    final Event event = fetchEvent(eventId, initiatorId);
+    final StatusRequest newStatus = StatusRequest.fromString(updateStatusDto.getStatus());
+    final Boolean isModerated = event.getRequestModeration();
+    final Integer participantLimit = event.getParticipantLimit();
+    final Integer confirmed = event.getConfirmedRequests();
+
+    if (!isModerated || participantLimit == 0) {
+      return autoConfirmRequests(updateStatusDto.getRequestIds(), eventId);
+    }
+
+    final List<ParticipationRequest> requestsToUpdate = getPendingRequests(updateStatusDto.getRequestIds(), eventId);
+
+    int availableSlots =  participantLimit - confirmed;
+    if (availableSlots <= 0) {
+      log.warn("Participant limit for the event {} has been reached: limit={}, confirmed requests={}.",
+          eventId,event.getParticipantLimit(),event.getConfirmedRequests());
+      throw new ConflictException("Participant limit for this event has been reached.");
+    }
+    return processRequestsWithLimit(requestsToUpdate, newStatus, availableSlots);
+  }
+
+  private EventRequestStatusUpdateResult processRequestsWithLimit(
+      final List<ParticipationRequest> requestsToUpdate,
+      final StatusRequest newStatus, final Integer availableSlots) {
+    log.debug("Processing requests {} to update status with {}. Available slots ={}",
+        requestsToUpdate, newStatus, availableSlots);
+    final List<ParticipationRequest> confirmedRequests = new ArrayList<>();
+    final List<ParticipationRequest> rejectedRequests = new ArrayList<>();
+    int available =  availableSlots;
+
+    if (newStatus.equals(StatusRequest.REJECTED)) {
+      requestsToUpdate.forEach(r -> r.setStatus(newStatus));
+      rejectedRequests.addAll(requestRepository.saveAll(requestsToUpdate));
+    } else {
+      for (ParticipationRequest request : requestsToUpdate) {
+        if (available > 0) {
+          request.setStatus(StatusRequest.CONFIRMED);
+          confirmedRequests.add(request);
+          available--;
+        } else {
+          request.setStatus(StatusRequest.REJECTED);
+          rejectedRequests.add(request);
+        }
+      }
+    }
+    requestRepository.saveAll(confirmedRequests);
+    requestRepository.saveAll(rejectedRequests);
+    return EventMapper.toEventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
+  }
+
+  private EventRequestStatusUpdateResult autoConfirmRequests(final List<Long> requestIds, final Long eventId) {
+    log.debug("Confirming All requests.");
+    final List<ParticipationRequest> requestsToUpdate = getPendingRequests(requestIds, eventId);
+    requestsToUpdate.forEach(request -> request.setStatus(StatusRequest.CONFIRMED));
+    requestRepository.saveAll(requestsToUpdate);
+
+    return EventMapper.toEventRequestStatusUpdateResult(requestsToUpdate, Collections.emptyList());
+  }
+
+  private List<ParticipationRequest> getPendingRequests(final List<Long> requestIds, final Long eventId) {
+    log.debug("Fetching participation requests with IDs:{} and PENDING status.",requestIds);
+    final List<ParticipationRequest> requests = requestRepository.findAllByIdInAndEventIdAndStatus(
+        requestIds, eventId, StatusRequest.PENDING);
+    if (requestIds.size() > requests.size()) {
+      log.warn("StatusRequest should be PENDING for all requests to be updated.");
+      throw new ConflictException(
+          "StatusRequest should be PENDING for all requests to be updated.");
+    }
+    return requests;
   }
 
 }

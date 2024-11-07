@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
@@ -15,6 +16,7 @@ import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.exception.AlreadyExistsException;
 import ru.practicum.exception.NotFoundException;
 
+@Transactional
 @Service
 @AllArgsConstructor
 @Slf4j
@@ -42,6 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<CategoryDto> getCategory(int from, int size) {
 
     Pageable pageable = PageRequest.of(from / size, size);
@@ -54,6 +57,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public CategoryDto getCategoryById(Long id) {
     log.info("Get category by id: {}", id);
     if (!repository.existsById(id)) {

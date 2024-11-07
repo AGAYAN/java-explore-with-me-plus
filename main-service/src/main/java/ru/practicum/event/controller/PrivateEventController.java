@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.event.dto.EventFullDto;
+import ru.practicum.event.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.event.dto.EventRequestStatusUpdateResult;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.event.dto.UpdateEventUserRequest;
 import ru.practicum.event.service.EventService;
 
@@ -76,5 +79,28 @@ public class PrivateEventController {
     log.info("Event updated successfully with ID={}.", eventUpdated.getId());
     return ResponseEntity.status(HttpStatus.OK).body(eventUpdated);
   }
+
+  @GetMapping("/{eventId}/requests")
+  public ResponseEntity<List<ParticipationRequestDto>> getEventParticipants(
+      @PathVariable("userId") @NotNull @Positive Long userId,
+      @PathVariable("eventId") @NotNull @Positive Long eventId) {
+    log.info("Request received GET /users/{}/events/{}/requests", userId, eventId);
+    final List<ParticipationRequestDto> result = eventService.getRequests(userId, eventId);
+    log.info("Sending event participant list size {}.", result.size());
+    return ResponseEntity.ok(result);
+  }
+
+  @PatchMapping("/{eventId}/requests")
+  public ResponseEntity<EventRequestStatusUpdateResult> changeRequestStatus(
+      @PathVariable("userId") @NotNull @Positive Long userId,
+      @PathVariable("eventId") @NotNull @Positive Long eventId,
+      @Validated @RequestBody EventRequestStatusUpdateRequest updateStatusDto) {
+    log.info("Request received Patch /users/{}/events/{}/requests, with data: {}",
+        userId, eventId, updateStatusDto);
+    final EventRequestStatusUpdateResult result = eventService.updateRequestsStatus(userId, eventId, updateStatusDto);
+    log.info("Event participation requests statuses updated {}.", result);
+    return ResponseEntity.ok(result);
+  }
+
 
 }
