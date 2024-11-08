@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import lombok.Data;
 import ru.practicum.event.model.Location;
-import ru.practicum.validation.MinTwoHoursInFuture;
+import ru.practicum.validation.MinimumHoursFromNow;
 
 /**
  * PRIVATE API - REQUEST body POST /users/{userId}/events
@@ -29,7 +29,7 @@ public class NewEventDto {
   @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters.")
   private String description;
 
-  @MinTwoHoursInFuture(message = "Event date must be at least two hours in the future.")
+  @MinimumHoursFromNow(hoursInFuture = 2, message = "Event date must be at least two hours in the future.")
   @NotNull(message = "Event date is required.")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime eventDate;

@@ -8,10 +8,9 @@ import ru.practicum.event.enums.Role;
 @AllArgsConstructor
 public class EventUpdateParam {
 
-  UpdateEventUserRequest updateData;
-//  UpdateEventAdminRequest adminUpdateData;
-  Long userId;
-  Long eventId;
-  Role role;
+  private UpdateEventUserRequest updateData;
+  private Long userId;
+  private Long eventId;
+  private Role role;
 
 }

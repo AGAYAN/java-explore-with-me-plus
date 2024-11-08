@@ -12,13 +12,24 @@ import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.model.EventWithRequestCount;
 
 public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPredicateExecutor<Event> {
 
   Page<Event> findAllByInitiatorId(Long initiatorId, PageRequest page);
 
-  @Query()
-  Optional<Event> findByIdAndInitiatorId(Long eventId, Long initiatorId);
+  @Query("""
+      SELECT e AS event, COUNT(r.id) AS confirmedRequests
+      FROM Event e
+      JOIN FETCH e.category c
+      JOIN FETCH e.initiator u
+      LEFT JOIN FETCH ParticipationRequest r ON r.event.id = e.id  AND r.status = 'CONFIRMED'
+      WHERE e.id = :eventId
+        AND e.initiator.id = :initiatorId
+      GROUP BY e, c.id, u.id
+      """)
+  Optional<EventWithRequestCount> findByIdAndInitiatorId(@Param("eventId") Long eventId,
+                                                         @Param("initiatorId") Long initiatorId);
 
   @Query("SELECT e FROM Event e " +
       "JOIN e.category c " +
@@ -34,4 +45,8 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
                                      @Param("rangeStart") LocalDateTime rangeStart,
                                      @Param("rangeEnd") LocalDateTime rangeEnd,
                                      Pageable pageable);
+
+  boolean existsByIdAndInitiatorId(Long eventId, Long userId);
+
+  boolean existsByCategoryId(Long id);
 }

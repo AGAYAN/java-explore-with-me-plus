@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import lombok.Data;
 import ru.practicum.event.enums.Role;
 import ru.practicum.event.model.Location;
-import ru.practicum.validation.MinTwoHoursInFuture;
+import ru.practicum.validation.MinimumHoursFromNow;
 import ru.practicum.validation.ValidStateAction;
 
 /**
@@ -25,7 +25,7 @@ public class UpdateEventUserRequest {
   @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters.")
   private String description;
 
-  @MinTwoHoursInFuture
+  @MinimumHoursFromNow(hoursInFuture = 2)
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime eventDate;
 

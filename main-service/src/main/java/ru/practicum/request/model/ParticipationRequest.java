@@ -1,42 +1,57 @@
 package ru.practicum.request.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
 
-import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "request")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "request")
 @EqualsAndHashCode(of = "id")
 @Accessors(chain = true)
 public class ParticipationRequest {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "event_id")
-    private Event event;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User requester;
+  @ManyToOne
+  @JoinColumn(name = "event_id")
+  private Event event;
 
-    @Enumerated(EnumType.STRING)
-    private StatusRequest status = StatusRequest.PENDING;
+  @ManyToOne
+  @JoinColumn(name = "user_id")
+  private User requester;
 
-    private LocalDateTime created = LocalDateTime.now();
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private StatusRequest status = StatusRequest.PENDING;
 
-    public ParticipationRequest(User user, Event event) {
-        this.requester = user;
-        this.event = event;
-        this.status = StatusRequest.PENDING;
-    }
+  private LocalDateTime created = LocalDateTime.now();
+
+  public ParticipationRequest(final User user, final Event event) {
+    this.requester = user;
+    this.event = event;
+    this.status = StatusRequest.PENDING;
+  }
 }
