@@ -111,16 +111,44 @@ public class EventServiceImpl implements EventService {
   @Override
   public List<ParticipationRequestDto> getRequests(final Long initiatorId, final Long eventId) {
     log.debug("Retrieving event participants for event ID={}, posted by user ID={}.", eventId, initiatorId);
-    //method provides validation user exists and event exists
     validateUserExist(initiatorId,eventId);
     return RequestMapper.mapToDto(requestRepository.findAllByEventIdAndEventInitiatorId(eventId, initiatorId));
   }
 
   /**
-   * Changes the request status into [CONFIRMED, REJECTED] of participation for the current user's event.
+   *  Updates the participation request statuses for the specified event of the current user.
+   *  The statuses can be changed to either {@code CONFIRMED} or {@code REJECTED}.
    */
+  @Override
+  public EventRequestStatusUpdateResult updateRequestsStatus(
+      final Long initiatorId,
+      final Long eventId,
+      final EventRequestStatusUpdateRequest updateStatusDto) {
+    log.debug("Updating participation requests {} for the event {} created by user {} with statusRequest {}",
+        updateStatusDto.getRequestIds(),eventId,initiatorId,updateStatusDto.getStatus());
 
+    validateUserExist(initiatorId);
 
+    final Event event = fetchEvent(eventId, initiatorId);
+    final StatusRequest newStatus = updateStatusDto.getStatus();
+    final Boolean isModerated = event.getRequestModeration();
+    final Integer participantLimit = event.getParticipantLimit();
+    final Integer confirmed = event.getConfirmedRequests();
+
+    if (!isModerated || participantLimit == 0) {
+      return autoConfirmRequests(updateStatusDto.getRequestIds(), eventId);
+    }
+
+    final List<ParticipationRequest> requestsToUpdate = getPendingRequests(updateStatusDto.getRequestIds(), eventId);
+
+    int availableSlots =  participantLimit - confirmed;
+    if (availableSlots <= 0) {
+      log.warn("Participant limit for the event {} has been reached: limit={}, confirmed requests={}.",
+          eventId,event.getParticipantLimit(),event.getConfirmedRequests());
+      throw new ConflictException("Participant limit for this event has been reached.");
+    }
+    return processRequestsWithLimit(requestsToUpdate, newStatus, availableSlots);
+  }
 
   /**
    * Edit an event added by the current user.
@@ -184,7 +212,6 @@ public class EventServiceImpl implements EventService {
         throw new ConflictException("Cannot reject the event because it is already published");
       }
       event.setState(StateAction.fromString(param.getStateAction()).getState());
-      //TODO set the publishedOn property
       event.setPublishedOn(LocalDateTime.now());
     }
 
@@ -358,35 +385,27 @@ public class EventServiceImpl implements EventService {
     userService.validateUserExist(userId);
   }
 
-  @Override
-  public EventRequestStatusUpdateResult updateRequestsStatus(
-      final Long initiatorId,
-      final Long eventId,
-      final EventRequestStatusUpdateRequest updateStatusDto) {
-    log.debug("Updating participation requests {} for the event {} created by user {} with statusRequest {}",
-        updateStatusDto.getRequestIds(),eventId,initiatorId,updateStatusDto.getStatus());
-    validateUserExist(initiatorId);
+  private EventRequestStatusUpdateResult autoConfirmRequests(final List<Long> requestIds, final Long eventId) {
+    log.debug("Confirming All requests.");
+    final List<ParticipationRequest> requestsToUpdate = getPendingRequests(requestIds, eventId);
+    requestsToUpdate.forEach(request -> request.setStatus(StatusRequest.CONFIRMED));
+    requestRepository.saveAll(requestsToUpdate);
 
-    final Event event = fetchEvent(eventId, initiatorId);
-    final StatusRequest newStatus = StatusRequest.fromString(updateStatusDto.getStatus());
-    final Boolean isModerated = event.getRequestModeration();
-    final Integer participantLimit = event.getParticipantLimit();
-    final Integer confirmed = event.getConfirmedRequests();
-
-    if (!isModerated || participantLimit == 0) {
-      return autoConfirmRequests(updateStatusDto.getRequestIds(), eventId);
-    }
-
-    final List<ParticipationRequest> requestsToUpdate = getPendingRequests(updateStatusDto.getRequestIds(), eventId);
-
-    int availableSlots =  participantLimit - confirmed;
-    if (availableSlots <= 0) {
-      log.warn("Participant limit for the event {} has been reached: limit={}, confirmed requests={}.",
-          eventId,event.getParticipantLimit(),event.getConfirmedRequests());
-      throw new ConflictException("Participant limit for this event has been reached.");
-    }
-    return processRequestsWithLimit(requestsToUpdate, newStatus, availableSlots);
+    return EventMapper.toEventRequestStatusUpdateResult(requestsToUpdate, Collections.emptyList());
   }
+
+  private List<ParticipationRequest> getPendingRequests(final List<Long> requestIds, final Long eventId) {
+    log.debug("Fetching participation requests with IDs:{} and PENDING status.",requestIds);
+    final List<ParticipationRequest> requests = requestRepository.findAllByIdInAndEventIdAndStatus(
+        requestIds, eventId, StatusRequest.PENDING);
+    if (requestIds.size() > requests.size()) {
+      log.warn("StatusRequest should be PENDING for all requests to be updated.");
+      throw new ConflictException(
+          "StatusRequest should be PENDING for all requests to be updated.");
+    }
+    return requests;
+  }
+
 
   private EventRequestStatusUpdateResult processRequestsWithLimit(
       final List<ParticipationRequest> requestsToUpdate,
@@ -417,25 +436,5 @@ public class EventServiceImpl implements EventService {
     return EventMapper.toEventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
   }
 
-  private EventRequestStatusUpdateResult autoConfirmRequests(final List<Long> requestIds, final Long eventId) {
-    log.debug("Confirming All requests.");
-    final List<ParticipationRequest> requestsToUpdate = getPendingRequests(requestIds, eventId);
-    requestsToUpdate.forEach(request -> request.setStatus(StatusRequest.CONFIRMED));
-    requestRepository.saveAll(requestsToUpdate);
-
-    return EventMapper.toEventRequestStatusUpdateResult(requestsToUpdate, Collections.emptyList());
-  }
-
-  private List<ParticipationRequest> getPendingRequests(final List<Long> requestIds, final Long eventId) {
-    log.debug("Fetching participation requests with IDs:{} and PENDING status.",requestIds);
-    final List<ParticipationRequest> requests = requestRepository.findAllByIdInAndEventIdAndStatus(
-        requestIds, eventId, StatusRequest.PENDING);
-    if (requestIds.size() > requests.size()) {
-      log.warn("StatusRequest should be PENDING for all requests to be updated.");
-      throw new ConflictException(
-          "StatusRequest should be PENDING for all requests to be updated.");
-    }
-    return requests;
-  }
 
 }

@@ -1,10 +1,10 @@
 package ru.practicum.event.dto;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import lombok.Data;
+import ru.practicum.request.model.StatusRequest;
 import ru.practicum.validation.ValidateStatusRequest;
 
 
@@ -18,8 +18,8 @@ public class EventRequestStatusUpdateRequest {
   @NotEmpty(message = "RequestIds cannot be empty.")
   private List<Long> requestIds;
 
-  @NotBlank(message = "Status cannot be blank.")
-  @ValidateStatusRequest
-  private String status;
+  @NotNull(message = "Status cannot be null.")
+  @ValidateStatusRequest(allowedValues = {StatusRequest.CONFIRMED,StatusRequest.REJECTED})
+  private StatusRequest status;
 
 }

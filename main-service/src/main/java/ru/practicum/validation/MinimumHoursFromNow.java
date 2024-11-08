@@ -9,15 +9,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Documented
-@Constraint(validatedBy = MinTwoHoursInFutureValidator.class)
+@Constraint(validatedBy = MinimumHoursFromNowValidator.class)
 @Target({ElementType.FIELD, ElementType.METHOD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MinTwoHoursInFuture {
+public @interface MinimumHoursFromNow {
 
   String message() default "The date must be at least two hours in the future.";
 
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
+
+  long hoursInFuture() default 2;
 
 }

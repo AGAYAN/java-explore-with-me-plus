@@ -4,23 +4,22 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.util.Arrays;
 import java.util.List;
+import ru.practicum.request.model.StatusRequest;
 
-public class StatusRequestValidator implements ConstraintValidator<ValidateStatusRequest, String> {
+public class StatusRequestValidator implements ConstraintValidator<ValidateStatusRequest, StatusRequest> {
 
-  private List<String> validStatusOptions;
+  private List<StatusRequest> validStatusOptions;
 
   @Override
   public void initialize(final ValidateStatusRequest constraintAnnotation) {
-    validStatusOptions = Arrays.stream(constraintAnnotation.allowedValues())
-        .map(Enum::name)
-        .toList();
+    validStatusOptions = Arrays.asList(constraintAnnotation.allowedValues());
   }
 
   @Override
-  public boolean isValid(final String statusValue, final ConstraintValidatorContext context) {
-    if (statusValue == null || statusValue.isEmpty()) {
+  public boolean isValid(final StatusRequest statusValue, final ConstraintValidatorContext context) {
+    if (statusValue == null) {
       return true;
     }
-    return validStatusOptions.contains(statusValue.trim().toUpperCase());
+    return validStatusOptions.contains(statusValue);
   }
 }
