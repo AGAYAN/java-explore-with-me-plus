@@ -13,7 +13,9 @@ import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.AlreadyExistsException;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
 @Transactional
@@ -23,6 +25,7 @@ import ru.practicum.exception.NotFoundException;
 public class CategoryServiceImpl implements CategoryService {
 
   private final CategoryRepository repository;
+  private final EventRepository eventRepository;
 
   /**
    * Метод добавления категории в базу данных с уровнем доступа Admin
@@ -88,6 +91,10 @@ public class CategoryServiceImpl implements CategoryService {
     log.info("Delete category by id: {}", id);
     if (!repository.existsById(id)) {
       throw new NotFoundException("Category with id " + id + " not found");
+    }
+    if (eventRepository.existsByCategoryId(id)) {
+      log.warn("Category with id {} is in use by an event and cannot be deleted.", id);
+      throw new ConflictException("Cannot be deleted; it's in use by an event.");
     }
     repository.deleteById(id);
   }

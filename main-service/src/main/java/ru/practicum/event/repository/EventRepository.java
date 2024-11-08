@@ -47,4 +47,6 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
                                      Pageable pageable);
 
   boolean existsByIdAndInitiatorId(Long eventId, Long userId);
+
+  boolean existsByCategoryId(Long id);
 }

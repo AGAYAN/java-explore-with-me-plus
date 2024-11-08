@@ -6,6 +6,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -29,6 +30,12 @@ public class ErrorHandler {
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<ApiError> handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
+    return buildErrorResponse(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<ApiError> handleMissingServletRequestParameter(final MissingServletRequestParameterException exception) {
     return buildErrorResponse(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
   }
 

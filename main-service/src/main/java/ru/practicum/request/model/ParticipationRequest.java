@@ -20,12 +20,13 @@ import lombok.experimental.Accessors;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
 
+
+@Entity
+@Table(name = "request")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
-@Table(name = "request")
 @EqualsAndHashCode(of = "id")
 @Accessors(chain = true)
 public class ParticipationRequest {
@@ -47,4 +48,10 @@ public class ParticipationRequest {
   private StatusRequest status = StatusRequest.PENDING;
 
   private LocalDateTime created = LocalDateTime.now();
+
+  public ParticipationRequest(final User user, final Event event) {
+    this.requester = user;
+    this.event = event;
+    this.status = StatusRequest.PENDING;
+  }
 }
