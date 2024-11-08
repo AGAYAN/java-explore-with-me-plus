@@ -3,6 +3,7 @@ package ru.practicum.request.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.event.enums.State;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
@@ -35,6 +36,10 @@ public class RequestServiceImpl implements RequestService {
 
         if(user.getId().equals(event.getInitiator().getId())) {
             throw new ConflictException("Нельзя добавить запрос на свое собственное событие");
+        }
+
+        if (!event.getState().equals(State.PUBLISHED)) {
+            throw new ConflictException("Нельзя участвовать в неопубликованном событии");
         }
 
         ParticipationRequest existingRequest = requestRepository.findByRequesterIdAndEventId(userId, eventId);
