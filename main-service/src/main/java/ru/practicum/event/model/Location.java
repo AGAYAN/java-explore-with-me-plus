@@ -1,32 +1,21 @@
 package ru.practicum.event.model;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-@Entity
-@Table(name = "location")
+
 @Getter
 @Setter
-@EqualsAndHashCode(of = "id")
-@NoArgsConstructor
-@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
+@Embeddable
 public class Location {
-
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(updatable = false, nullable = false)
-  private Long id;
 
   @Column(name = "latitude", nullable = false)
   @DecimalMin(value = "-90.0", message = "Latitude must be between -90 and 90.")
