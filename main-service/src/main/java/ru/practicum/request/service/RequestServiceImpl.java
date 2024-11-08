@@ -33,15 +33,21 @@ public class RequestServiceImpl implements RequestService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Нету такого event"));
 
-        int confirRequestRepository = requestRepository.countAllByEventIdAndStatus(eventId, StatusRequest.CONFIRMED);
-
         if(user.getId().equals(event.getInitiator().getId())) {
             throw new ConflictException("Нельзя добавить запрос на свое собственное событие");
         }
 
-        ParticipationRequest participationRequest = RequestMapper.mapTo(new ParticipationRequestDto(), user, event);
+        ParticipationRequest existingRequest = requestRepository.findByRequesterIdAndEventId(userId, eventId);
 
-        if(event.getParticipantLimit() != 0 && event.getParticipantLimit() == confirRequestRepository) {
+        if(existingRequest != null && ! StatusRequest.CANCELED.equals(existingRequest.getStatus())) {
+            throw new ConflictException("Вы уже отправили запрос на это событие");
+        }
+
+        int comfirmedRequests = requestRepository.countAllByEventIdAndStatus(eventId, StatusRequest.CONFIRMED);
+
+        ParticipationRequest participationRequest = new ParticipationRequest(user, event);
+
+        if(event.getParticipantLimit() != 0 && event.getParticipantLimit() == comfirmedRequests) {
             throw new ConflictException("Лимит запроса закончен");
         }
 

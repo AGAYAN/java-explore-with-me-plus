@@ -33,4 +33,10 @@ public class ParticipationRequest {
     private StatusRequest status = StatusRequest.PENDING;
 
     private LocalDateTime created = LocalDateTime.now();
+
+    public ParticipationRequest(User user, Event event) {
+        this.requester = user;
+        this.event = event;
+        this.status = StatusRequest.PENDING;
+    }
 }

@@ -10,7 +10,7 @@ public interface RequestService {
 
     List<ParticipationRequestDto> getAll(Long userId);
 
-    ParticipationRequestDto cancel(@PathVariable Long userId, @PathVariable Long requestId);
+    ParticipationRequestDto cancel(Long userId, Long requestId);
 
-    List<ParticipationRequestDto> getRequestById(@PathVariable Long userId, @PathVariable Long eventId);
+    List<ParticipationRequestDto> getRequestById(Long userId, Long eventId);
 }

@@ -43,17 +43,18 @@ CREATE TABLE IF NOT EXISTS event
     CONSTRAINT fk_initiator FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS request (
-    id BIGINT GENERATED ALWAYS AS IDENTITY primary key,
-    created TIMESTAMP WITHOUT TIME ZONE  NOT NULL,
-    status varchar(10) NOT NULL,
-    user_id BIGINT,
-    event_id BIGINT,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_id) REFERENCES event(id) ON DELETE CASCADE
+CREATE TABLE IF NOT EXISTS request
+(
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    status VARCHAR(10) NOT NULL CHECK (status IN ('PENDING', 'CANCELED', 'CONFIRMED', 'REJECTED')),
+    user_id BIGINT NOT NULL,
+    event_id BIGINT NOT NULL,
+    CONSTRAINT fk_event FOREIGN KEY (event_id) REFERENCES event (id) ON DELETE CASCADE,
+    CONSTRAINT fk_requester FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
---CREATE INDEX idx_event_category ON event (category_id);
---CREATE INDEX idx_event_initiator ON event (initiator_id);
---CREATE INDEX  IF NOT EXISTS idx_event_state ON event (state);
---CREATE INDEX  IF NOT EXISTS idx_event_date ON event (event_date);
+CREATE INDEX IF NOT EXISTS idx_event_category ON event (category_id);
+CREATE INDEX IF NOT EXISTS idx_event_initiator ON event (initiator_id);
+CREATE INDEX IF NOT EXISTS idx_event_state ON event (state);
+CREATE INDEX IF NOT EXISTS idx_event_date ON event (event_date);
