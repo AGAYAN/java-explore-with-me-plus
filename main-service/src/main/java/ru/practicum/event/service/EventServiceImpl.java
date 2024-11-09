@@ -8,7 +8,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -148,6 +150,16 @@ public class EventServiceImpl implements EventService {
       throw new ConflictException("Participant limit for this event has been reached.");
     }
     return processRequestsWithLimit(requestsToUpdate, newStatus, availableSlots);
+  }
+
+  @Override
+  public Set<Event> getEvents(final Set<Long> eventIds) {
+    log.debug("Retrieving set of events by theirs IDs: {}.", eventIds);
+    Objects.requireNonNull(eventIds);
+    //TODO
+    // setViews();
+    // setConfirmedRequests();
+    return eventIds.isEmpty() ? Set.of() : eventRepository.findAllDistinctByIdIn(eventIds);
   }
 
   /**
