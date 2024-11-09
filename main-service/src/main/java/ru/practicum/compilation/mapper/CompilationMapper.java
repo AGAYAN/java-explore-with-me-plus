@@ -1,15 +1,14 @@
 package ru.practicum.compilation.mapper;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.NewCompilationDto;
 import ru.practicum.compilation.model.Compilation;
-import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 
@@ -38,4 +37,13 @@ public class CompilationMapper {
         .setPinned(compilation.isPinned())
         .setTitle(compilation.getTitle());
   }
+
+  public static List<CompilationDto> toCompilationDto(final List<Compilation> compilation) {
+    log.debug("Mapping Compilation {} to the CompilationDto.", compilation);
+    if (compilation == null || compilation.isEmpty()) {
+      return List.of();
+    }
+    return compilation.stream().map(CompilationMapper::toCompilationDto).toList();
+  }
+
 }

@@ -37,7 +37,7 @@ public class Compilation {
   @Column(name = "pinned", nullable = false, columnDefinition = "boolean default false")
   private boolean pinned;
 
-  @ManyToMany(cascade = {CascadeType.ALL})
+  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
   @JoinTable(name = "compilation_event",
       joinColumns = @JoinColumn(name = "compilation_id"),
       inverseJoinColumns = @JoinColumn(name = "event_id"))
