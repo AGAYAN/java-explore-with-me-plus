@@ -7,20 +7,25 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.dto.NewCategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.AlreadyExistsException;
+import ru.practicum.exception.ConflictException;
 import ru.practicum.exception.NotFoundException;
 
+@Transactional
 @Service
 @AllArgsConstructor
 @Slf4j
 public class CategoryServiceImpl implements CategoryService {
 
   private final CategoryRepository repository;
+  private final EventRepository eventRepository;
 
   /**
    * Метод добавления категории в базу данных с уровнем доступа Admin
@@ -42,6 +47,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public List<CategoryDto> getCategory(int from, int size) {
 
     Pageable pageable = PageRequest.of(from / size, size);
@@ -54,6 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
   }
 
   @Override
+  @Transactional(readOnly = true)
   public CategoryDto getCategoryById(Long id) {
     log.info("Get category by id: {}", id);
     if (!repository.existsById(id)) {
@@ -84,6 +91,10 @@ public class CategoryServiceImpl implements CategoryService {
     log.info("Delete category by id: {}", id);
     if (!repository.existsById(id)) {
       throw new NotFoundException("Category with id " + id + " not found");
+    }
+    if (eventRepository.existsByCategoryId(id)) {
+      log.warn("Category with id {} is in use by an event and cannot be deleted.", id);
+      throw new ConflictException("Cannot be deleted; it's in use by an event.");
     }
     repository.deleteById(id);
   }

@@ -1,6 +1,10 @@
 package ru.practicum.event.dto;
 
+import java.util.ArrayList;
 import java.util.List;
+import lombok.Data;
+import lombok.experimental.Accessors;
+import ru.practicum.request.dto.ParticipationRequestDto;
 
 /**
  * RESPONSE
@@ -8,8 +12,10 @@ import java.util.List;
  *
  * PATCH /users/{userId}/events/{eventId}/requests
  */
+@Data
+@Accessors(chain = true)
 public class EventRequestStatusUpdateResult {
 
-  private List<ParticipationRequestDto> confirmedRequests;
-  private List<ParticipationRequestDto> rejectedRequests;
+  private List<ParticipationRequestDto> confirmedRequests = new ArrayList<>();
+  private List<ParticipationRequestDto> rejectedRequests = new ArrayList<>();
  }

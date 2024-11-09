@@ -4,13 +4,14 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import java.time.LocalDateTime;
 
-public class MinTwoHoursInFutureValidator implements ConstraintValidator<MinTwoHoursInFuture, LocalDateTime> {
+public class MinimumHoursFromNowValidator implements ConstraintValidator<MinimumHoursFromNow, LocalDateTime> {
 
   private LocalDateTime minimumValidTime;
 
   @Override
-  public void initialize(MinTwoHoursInFuture constraintAnnotation) {
-    minimumValidTime = LocalDateTime.now().plusHours(2);
+  public void initialize(MinimumHoursFromNow constraintAnnotation) {
+    long hoursInFuture = constraintAnnotation.hoursInFuture();
+    minimumValidTime = LocalDateTime.now().plusHours(hoursInFuture);
   }
 
   @Override

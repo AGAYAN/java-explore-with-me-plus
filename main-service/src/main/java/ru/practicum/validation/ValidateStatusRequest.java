@@ -2,22 +2,24 @@ package ru.practicum.validation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import ru.practicum.request.model.StatusRequest;
 
-@Documented
-@Constraint(validatedBy = MinTwoHoursInFutureValidator.class)
-@Target({ElementType.FIELD, ElementType.METHOD,ElementType.PARAMETER})
+@Constraint(validatedBy = StatusRequestValidator.class)
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface MinTwoHoursInFuture {
+public @interface ValidateStatusRequest {
 
-  String message() default "The date must be at least two hours in the future.";
+  String message() default "Invalid participation request status.";
 
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
+
+  StatusRequest[] allowedValues() default {StatusRequest.CONFIRMED, StatusRequest.REJECTED};
+
 
 }

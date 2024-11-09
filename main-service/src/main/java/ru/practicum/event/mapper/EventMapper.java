@@ -9,10 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.event.dto.EventFullDto;
+import ru.practicum.event.dto.EventRequestStatusUpdateResult;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.enums.State;
 import ru.practicum.event.model.Event;
+import ru.practicum.request.mapper.RequestMapper;
+import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mappers.UserMapper;
 
@@ -85,5 +88,13 @@ public class EventMapper {
     return events.stream()
         .map(EventMapper::toShortDto)
         .toList();
+  }
+
+  public static EventRequestStatusUpdateResult toEventRequestStatusUpdateResult(
+      final List<ParticipationRequest> confirmedRequests, final List<ParticipationRequest> rejectedRequests) {
+    log.debug("Mapping parameters to the EventRequestStatusUpdateResult.");
+    return new EventRequestStatusUpdateResult()
+        .setConfirmedRequests(RequestMapper.mapToDto(confirmedRequests))
+        .setRejectedRequests(RequestMapper.mapToDto(rejectedRequests));
   }
 }

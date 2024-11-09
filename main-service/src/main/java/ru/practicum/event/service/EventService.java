@@ -4,6 +4,15 @@ import java.util.List;
 
 import jakarta.servlet.http.HttpServletRequest;
 import ru.practicum.event.dto.*;
+import ru.practicum.event.dto.EventFullDto;
+import ru.practicum.event.dto.EventRequestStatusUpdateRequest;
+import ru.practicum.event.dto.EventRequestStatusUpdateResult;
+import ru.practicum.event.dto.EventShortDto;
+import ru.practicum.event.dto.GetEventAdminRequest;
+import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.request.dto.ParticipationRequestDto;
+import ru.practicum.event.dto.UpdateEventAdminRequest;
+import ru.practicum.event.dto.UpdateEventUserRequest;
 
 public interface EventService {
 
@@ -25,4 +34,7 @@ public interface EventService {
 
   EventFullDto getEventsById(Long eventId, HttpServletRequest request);
 
+  List<ParticipationRequestDto> getRequests(Long initiatorId, Long eventId);
+
+  EventRequestStatusUpdateResult updateRequestsStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest updateStatusDto);
 }
