@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.EndPointHitDto;
+import ru.practicum.StatsClient;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.GetEventPublicParam;
@@ -21,6 +23,7 @@ import java.util.List;
 public class PublicEventController {
 
     private final EventService eventService;
+    private final StatsClient statsClient;
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(value = "text", required = false) String text,
@@ -48,13 +51,28 @@ public class PublicEventController {
                 .setSize(size);
 
         log.info("Request received GET /events with params {}", params);
-
-        return eventService.getEvents(params, request);
+        List<EventShortDto> events = eventService.getEvents(params, request);
+        log.info("Events received: {}", events);
+        EndPointHitDto hitDto = new EndPointHitDto();
+        hitDto.setApp("explore-with-me");
+        hitDto.setUri(request.getRequestURI());
+        hitDto.setIp(request.getRemoteAddr());
+        hitDto.setRequestTime(LocalDateTime.now());
+        statsClient.saveHit(hitDto);
+        return events;
     }
 
     @GetMapping("/{eventId}")
     public EventFullDto getEventsById(@PathVariable Long eventId, HttpServletRequest request) {
         log.info("Request received GET /events with id {}", eventId);
-        return eventService.getEventsById(eventId, request);
+        EventFullDto event = eventService.getEventsById(eventId, request);
+        log.info("Event received: {}", event);
+        EndPointHitDto hitDto = new EndPointHitDto();
+        hitDto.setApp("explore-with-me");
+        hitDto.setUri(request.getRequestURI());
+        hitDto.setIp(request.getRemoteAddr());
+        hitDto.setRequestTime(LocalDateTime.now());
+        statsClient.saveHit(hitDto);
+        return event;
     }
 }

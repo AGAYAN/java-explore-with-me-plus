@@ -2,23 +2,15 @@ package ru.practicum.event.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.practicum.EndPointHitDto;
-import ru.practicum.StatsClient;
-import ru.practicum.ViewStatsDto;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
@@ -50,7 +42,8 @@ import ru.practicum.request.service.RequestService;
 import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.service.UserService;
-
+import ru.practicum.StatsClient;
+import ru.practicum.ViewStatsDto;
 @Transactional
 @Service
 @Slf4j
@@ -61,8 +54,6 @@ public class EventServiceImpl implements EventService {
   private final EventQueryRepository eventRepositoryImpl;
   private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
-  private final StatsClient statsClient;
-
   private final UserService userService;
   private final CategoryService categoryService;
   private final RequestService requestService;
@@ -174,15 +165,6 @@ public class EventServiceImpl implements EventService {
   @Override
   public List<EventShortDto> getEvents(GetEventPublicParam param, HttpServletRequest request) {
     log.debug("Fetching events with params {}", param);
-
-    EndPointHitDto hit = new EndPointHitDto()
-            .setApp("explore-with-me")
-            .setUri(request.getRequestURI())
-            .setIp(request.getRemoteAddr())
-            .setRequestTime(LocalDateTime.now());
-
-    statsClient.saveHit(hit);
-
     return eventRepositoryImpl.publicGetEvents(
             param.getText(),
             param.getCategories(),
@@ -198,17 +180,10 @@ public class EventServiceImpl implements EventService {
   @Override
   public EventFullDto getEventsById(Long eventId, HttpServletRequest request) {
     log.debug("Fetching event ID={}.", eventId);
+    Event event = eventRepository.findByIdAndState(eventId, State.PUBLISHED)
+            .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found or not published"));
 
-    EndPointHitDto hit = new EndPointHitDto()
-            .setApp("explore-with-me")
-            .setUri(request.getRequestURI())
-            .setIp(request.getRemoteAddr())
-            .setRequestTime(LocalDateTime.now());
-
-    statsClient.saveHit(hit);
-
-      return EventMapper.toFullDto(eventRepository.findById(eventId).orElseThrow(() ->
-              new NotFoundException("Event with id " + eventId + " not found")));
+    return EventMapper.toFullDto(event);
   }
 
   /**
@@ -228,7 +203,6 @@ public class EventServiceImpl implements EventService {
         param.getFrom(),
         param.getSize()
     );
-    return eventsPage.getContent();
   }
 
   /**
@@ -401,7 +375,7 @@ public class EventServiceImpl implements EventService {
             target.setState(StateAction.fromString(stateAction).getState()));
   }
 
-  private void validateUpdatable(final Event event) {
+  private void validateEventUpdatable(final Event event) {
     log.debug("Validate event date at least is two hours ahead and it is not published.");
     validateEventDate(event.getEventDate());
     validateEventState(event);

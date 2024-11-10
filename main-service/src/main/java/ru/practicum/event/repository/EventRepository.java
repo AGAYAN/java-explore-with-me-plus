@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.event.dto.EventFullDto;
+import ru.practicum.event.enums.State;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventWithRequestCount;
 
@@ -31,6 +32,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
   Optional<EventWithRequestCount> findByIdAndInitiatorId(@Param("eventId") Long eventId,
                                                          @Param("initiatorId") Long initiatorId);
 
+  Optional<Event> findByIdAndState(Long id, State state);
   @Query("SELECT e FROM Event e " +
       "JOIN e.category c " +
       "JOIN e.location l " +

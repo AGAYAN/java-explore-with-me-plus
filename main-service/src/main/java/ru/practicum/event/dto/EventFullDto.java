@@ -3,6 +3,7 @@ package ru.practicum.event.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.event.model.Location;
@@ -17,6 +18,7 @@ import ru.practicum.user.dto.UserShortDto;
  * /users/{userId}/events/{eventId}
  */
 @Data
+@NoArgsConstructor
 @Accessors(chain = true)
 public class EventFullDto {
 
@@ -55,4 +57,24 @@ public class EventFullDto {
 
   private Long views;
 
+  public EventFullDto(String annotation, CategoryDto category, Integer confirmedRequests, LocalDateTime createdOn,
+                      String description, LocalDateTime eventDate, Long id, UserShortDto initiator,
+                      Location location, Boolean paid, Integer participantLimit, LocalDateTime publishedOn,
+                      Boolean requestModeration, String state, String title) {
+    this.annotation = annotation;
+    this.category = category;
+    this.confirmedRequests = confirmedRequests;
+    this.createdOn = createdOn;
+    this.description = description;
+    this.eventDate = eventDate;
+    this.id = id;
+    this.initiator = initiator;
+    this.location = location;
+    this.paid = paid;
+    this.participantLimit = participantLimit;
+    this.publishedOn = publishedOn;
+    this.requestModeration = requestModeration;
+    this.state = state;
+    this.title = title;
+  }
 }
