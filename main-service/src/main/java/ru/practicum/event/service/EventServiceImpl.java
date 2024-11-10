@@ -183,7 +183,13 @@ public class EventServiceImpl implements EventService {
     Event event = eventRepository.findByIdAndState(eventId, State.PUBLISHED)
             .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found or not published"));
 
-    return EventMapper.toFullDto(event);
+    String uri = "/events/" + event.getId();
+    Map<String, Long> viewsMap = getViewsForEvents(event.getEventDate(), event.getEventDate(), List.of(uri));
+
+    EventFullDto eventFullDto = EventMapper.toFullDto(event);
+    eventFullDto.setViews(eventId);
+
+    return eventFullDto;
   }
 
   /**
@@ -457,5 +463,16 @@ public class EventServiceImpl implements EventService {
     return EventMapper.toEventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
   }
 
+  private Map<String, Long> getViewsForEvents(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<String> uris) {
+    // Форматируем временной диапазон в строку
+    String start = rangeStart != null ? rangeStart.toString() : LocalDateTime.now().toString();
+    String end = rangeEnd != null ? rangeEnd.toString() : LocalDateTime.now().toString();
 
+    // Запрашиваем статистику просмотров через statsClient
+    ViewStatsDto[] stats = statsClient.getStats(start, end, uris.toArray(new String[0]), false);
+
+    // Преобразуем массив ViewStatsDto в Map для быстрого доступа по URI
+    return Arrays.stream(stats)
+            .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits, (a, b) -> b));
+  }
 }

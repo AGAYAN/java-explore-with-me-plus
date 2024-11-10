@@ -5,6 +5,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
+import org.springframework.http.HttpStatus;
+import ru.practicum.exception.StatsBadRequestException;
 
 @Component
 public class StatsClient {
@@ -45,12 +47,28 @@ public class StatsClient {
             return webClient.get()
                     .uri(uri)
                     .retrieve()
-                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
-                            clientResponse -> clientResponse.bodyToMono(String.class)
-                                    .flatMap(body -> Mono.error(new RuntimeException("Request failed: " + body))))
+                    .onStatus(
+                            // Обработка ошибки 4xx и 5xx
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            clientResponse -> {
+                                if (clientResponse.statusCode().equals(HttpStatus.BAD_REQUEST)) {
+                                    // Если ошибка 400, выбрасываем кастомное исключение StatsBadRequestException
+                                    return clientResponse.bodyToMono(String.class)
+                                            .flatMap(body -> Mono.error(new StatsBadRequestException("Bad Request: " + body)));
+                                } else {
+                                    // Обработка других ошибок
+                                    return clientResponse.bodyToMono(String.class)
+                                            .flatMap(body -> Mono.error(new RuntimeException("Request failed: " + body)));
+                                }
+                            })
                     .bodyToMono(ViewStatsDto[].class)
                     .block();
+        } catch (StatsBadRequestException e) {
+            // Ловим исключение StatsBadRequestException, которое выбрасывается в случае ошибки 400
+            System.out.println("Bad Request Exception: " + e.getMessage());
+            throw e; // Прокидываем исключение дальше
         } catch (Exception e) {
+            // Ловим другие исключения
             System.out.println("Error during request: " + e.getMessage());
             throw new RuntimeException("Error while fetching stats: " + e.getMessage(), e);
         }

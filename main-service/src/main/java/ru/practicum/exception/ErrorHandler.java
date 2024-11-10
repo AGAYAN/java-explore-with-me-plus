@@ -51,6 +51,13 @@ public class ErrorHandler {
     return buildErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error");
   }
 
+  @ExceptionHandler(StatsBadRequestException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<ApiError> handleBadRequestException(final StatsBadRequestException exception) {
+    log.error("400 Bad Request: {}", exception.getMessage(), exception);
+    return buildErrorResponse(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
+  }
+
   private ResponseEntity<ApiError> buildErrorResponse(final Exception exception, HttpStatus status, String reason) {
     log.error("{}: {}", status.value(), reason, exception);
 
