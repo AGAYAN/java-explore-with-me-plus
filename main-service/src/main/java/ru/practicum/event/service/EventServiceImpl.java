@@ -2,34 +2,28 @@ package ru.practicum.event.service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.StatsClient;
-import ru.practicum.ViewStatsDto;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
 import ru.practicum.category.service.CategoryService;
+import ru.practicum.event.dto.*;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventRequestStatusUpdateRequest;
 import ru.practicum.event.dto.EventRequestStatusUpdateResult;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.GetEventAdminRequest;
 import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.exception.BadRequestException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.event.dto.UpdateEventAdminRequest;
 import ru.practicum.event.dto.UpdateEventUserRequest;
@@ -46,8 +40,10 @@ import ru.practicum.request.model.ParticipationRequest;
 import ru.practicum.request.repository.RequestRepository;
 import ru.practicum.request.service.RequestService;
 import ru.practicum.user.dto.UserDto;
+import ru.practicum.user.repository.UserRepository;
 import ru.practicum.user.service.UserService;
-
+import ru.practicum.StatsClient;
+import ru.practicum.ViewStatsDto;
 @Transactional
 @Service
 @Slf4j
@@ -55,6 +51,7 @@ import ru.practicum.user.service.UserService;
 public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
+  private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
   private final UserService userService;
   private final CategoryService categoryService;
@@ -154,43 +151,73 @@ public class EventServiceImpl implements EventService {
    * Edit an event added by the current user.
    */
   @Override
-  public EventFullDto updateEvent(final Long initiatorId, final Long eventId, final UpdateEventUserRequest eventDto) {
+  public EventFullDto updateEvent(final Long userId, final Long eventId, final UpdateEventUserRequest eventDto) {
     log.debug("Updating event ID={}, posted by user with ID={} with data {}.",
-        eventId, initiatorId,eventDto);
-    final Event eventToUpdate = getEnrichedEvent(initiatorId, eventId);
-    validateUpdatable(eventToUpdate);
+        eventId, userId,eventDto);
+    final Event eventToUpdate = getEnrichedEvent(userId, eventId);
+    validateEventUpdatable(eventToUpdate);
     patchEventFields(eventToUpdate, eventDto);
     eventRepository.save(eventToUpdate);
     return EventMapper.toFullDto(eventToUpdate);
   }
 
+  @Override
+  public List<EventShortDto> getEvents(GetEventPublicParam param, HttpServletRequest request) {
+    log.debug("Fetching events with params {}", param);
+    if (param.getRangeStart() != null && param.getRangeEnd() != null &&
+            param.getRangeStart().isAfter(param.getRangeEnd())) {
+      throw new BadRequestException("Start date should be before end date");
+    }
+    return eventRepository.publicGetEvents(
+            param.getText(),
+            param.getCategories(),
+            param.getPaid(),
+            param.getRangeStart(),
+            param.getRangeEnd(),
+            param.getOnlyAvailable(),
+            param.getSort(),
+            param.getFrom(),
+            param.getSize());
+  }
+
+  @Override
+  public EventFullDto getEventsById(Long eventId, HttpServletRequest request) {
+    log.debug("Fetching event ID={}.", eventId);
+    Event event = eventRepository.findByIdAndState(eventId, State.PUBLISHED)
+            .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found or not published"));
+
+    String uri = "/events/" + event.getId();
+    Map<String, Long> viewsMap = getViewsForEvents(event.getCreatedOn(), event.getEventDate(), List.of(uri));
+
+    EventFullDto eventFullDto = EventMapper.toFullDto(event);
+    eventFullDto.setViews(viewsMap.getOrDefault(uri, 0L));
+
+    return eventFullDto;
+  }
+
   /**
    * Retrieves All existed in DB events (performed by ADMIN).
    */
-  //TODO rename it to the getEvent(GetEventAdminRequest param)
   @Transactional(readOnly = true)
   @Override
-  public List<EventFullDto> adminGetEvent(GetEventAdminRequest param) {
+  public List<EventFullDto> getEvent(GetEventAdminRequest param) {
     log.info("Received request GET /admin/events with param {}", param);
-    Pageable pageable = PageRequest.of(param.getFrom() / param.getSize(), param.getSize());
-    Page<EventFullDto> eventsPage = eventRepository.adminFindEvents(
+      return eventRepository.adminFindEvents(
         param.getUsers(),
         param.getStates(),
         param.getCategories(),
         param.getRangeStart(),
         param.getRangeEnd(),
-        pageable
+        param.getFrom(),
+        param.getSize()
     );
-    return eventsPage.getContent();
   }
 
   /**
    * Updates the specified event with the provided data.(Performed by ADMIN)
    */
-  ///TODO жду реализации GET events/ api с досутпом PUBLIC
-  //TODO  rename it to updateEvent(long eventId, UpdateEventAdminRequest param)
   @Override
-  public EventFullDto adminPatchEvent(long eventId, UpdateEventAdminRequest param) {
+  public EventFullDto updateEvent(long eventId, UpdateEventAdminRequest param) {
     Event event = eventRepository.findById(eventId)
         .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
@@ -245,17 +272,6 @@ public class EventServiceImpl implements EventService {
       event.setTitle(param.getTitle());
     }
 
-//    String start = event.getCreatedOn().toString();
-//    String end = LocalDateTime.now().toString();
-//    log.debug("Get views for event with id={}", eventId);
-//    ViewStatsDto[] views = statsClient.getStats(start, end, new String[]{"/events/" + eventId},
-//        true);
-//    ///TODO думаю что можно оставить как есть пока не нашёл как сделать лучше.
-//    if (views != null && views.length > 0) {
-//      event.setViews(views[0].getHits());
-//    } else {
-//      event.setViews(0L);
-//    }
     setViews(List.of(event));
     setConfirmedRequests(List.of(event));
 
@@ -354,7 +370,7 @@ public class EventServiceImpl implements EventService {
             target.setState(StateAction.fromString(stateAction).getState()));
   }
 
-  private void validateUpdatable(final Event event) {
+  private void validateEventUpdatable(final Event event) {
     log.debug("Validate event date at least is two hours ahead and it is not published.");
     validateEventDate(event.getEventDate());
     validateEventState(event);
@@ -436,5 +452,13 @@ public class EventServiceImpl implements EventService {
     return EventMapper.toEventRequestStatusUpdateResult(confirmedRequests, rejectedRequests);
   }
 
+  private Map<String, Long> getViewsForEvents(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<String> uris) {
+    String start = rangeStart != null ? rangeStart.toString() : LocalDateTime.now().toString();
+    String end = rangeEnd != null ? rangeEnd.toString() : LocalDateTime.now().toString();
 
+    ViewStatsDto[] stats = statsClient.getStats(start, end, uris.toArray(new String[0]), true);
+
+    return Arrays.stream(stats)
+            .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits, (a, b) -> b));
+  }
 }

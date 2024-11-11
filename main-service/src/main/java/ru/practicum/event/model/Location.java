@@ -4,17 +4,15 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
+import lombok.*;
 
 @Getter
 @Setter
 @EqualsAndHashCode
 @ToString
 @Embeddable
+@AllArgsConstructor
+@NoArgsConstructor
 public class Location {
 
   @Column(name = "latitude", nullable = false)
