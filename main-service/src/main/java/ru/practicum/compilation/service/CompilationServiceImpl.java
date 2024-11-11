@@ -79,6 +79,9 @@ public class CompilationServiceImpl implements CompilationService {
     }
   }
 
+  /**
+   * Retrieves Event Compilations by specified filters defined in the CompilationParam.
+   */
   @Override
   public List<CompilationDto> get(final CompilationParam searchParam) {
     Objects.requireNonNull(searchParam);
@@ -86,6 +89,9 @@ public class CompilationServiceImpl implements CompilationService {
     return CompilationMapper.toCompilationDto(compilations);
   }
 
+  /**
+   * Retrieves Event Compilation info by its ID.
+   */
   @Override
   public CompilationDto get(final Long compId) {
     final Compilation compilation = fetchCompilation(compId);

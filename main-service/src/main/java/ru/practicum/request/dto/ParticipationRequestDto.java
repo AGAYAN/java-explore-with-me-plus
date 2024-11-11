@@ -9,7 +9,7 @@ import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
 
 /**
- * PRIVATE API - RESPONSE
+ * Is used in the PRIVATE APIs - as RESPONSE
  * <p>
  * GET /users/{userId}/requests
  * <p>

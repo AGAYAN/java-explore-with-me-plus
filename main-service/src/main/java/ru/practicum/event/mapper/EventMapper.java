@@ -23,7 +23,7 @@ import ru.practicum.user.mappers.UserMapper;
 @Slf4j
 public class EventMapper {
 
-  public Event toEvent(final NewEventDto eventDto, final UserDto initiator, final CategoryDto category) {
+  public static Event toEvent(final NewEventDto eventDto, final UserDto initiator, final CategoryDto category) {
     log.debug("Mapping NewEventDto {} to the Event.", eventDto);
     Objects.requireNonNull(eventDto);
     Objects.requireNonNull(initiator);
@@ -40,8 +40,6 @@ public class EventMapper {
         .setTitle(eventDto.getTitle())
         .setRequestModeration(eventDto.getRequestModeration())
         .setState(State.PENDING);
-
-
   }
 
   public static EventFullDto toFullDto(final Event event) {

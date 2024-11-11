@@ -7,7 +7,9 @@ import lombok.experimental.Accessors;
 import ru.practicum.event.dto.EventShortDto;
 
 /**
- * ADMIN API - RESPONSE  POST /admin/compilations
+ * Is used in the Admin API - as RESPONSE
+ * <p>
+ * POST /admin/compilations
  */
 @Data
 @Accessors(chain = true)

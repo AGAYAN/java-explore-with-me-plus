@@ -6,11 +6,12 @@ import java.util.Set;
 import lombok.Data;
 
 /**
- * ADMIN API - REQUEST body POST /admin/compilations
+ * Is used in the ADMIN API - as REQUEST body
+ * <p>
+ *   POST /admin/compilations
  */
 @Data
 public class NewCompilationDto {
-
 
   private Set<Long> events;
 

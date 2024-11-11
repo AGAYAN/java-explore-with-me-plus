@@ -52,7 +52,7 @@ public class AdminCompilationController {
     log.info("Request received PATCH /admin/compilations/{} to update compilation with data {}.",
         compId, compDto);
     final CompilationDto updatedCompilation = service.update(compId, compDto);
-    log.info("Compilation saved successfully with ID={}.", updatedCompilation.getId());
+    log.info("Compilation ID={} updated successfully.", updatedCompilation.getId());
     return ResponseEntity.status(HttpStatus.OK).body(updatedCompilation);
   }
 

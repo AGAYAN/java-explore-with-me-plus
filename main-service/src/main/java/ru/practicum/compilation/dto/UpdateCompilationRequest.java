@@ -5,7 +5,9 @@ import java.util.Set;
 import lombok.Data;
 
 /**
- * ADMIN API - REQUEST body  PATH /admin/compilations/{compId}
+ * Isnused in the ADMIN API - as REQUEST body
+ * <p>
+ *   PATCH /admin/compilations/{compId}
  */
 @Data
 public class UpdateCompilationRequest {

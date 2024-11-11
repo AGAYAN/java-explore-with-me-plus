@@ -11,5 +11,4 @@ public interface RequestService {
 
     ParticipationRequestDto cancel(Long userId, Long requestId);
 
-    List<ParticipationRequestDto> getRequestById(Long userId, Long eventId);
 }

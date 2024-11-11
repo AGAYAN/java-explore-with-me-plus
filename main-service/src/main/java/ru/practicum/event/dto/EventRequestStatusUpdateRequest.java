@@ -10,7 +10,8 @@ import ru.practicum.validation.ValidateStatusRequest;
 
 
 /**
- * PRIVATE - REQUEST body PATCH /users/{userId}/events/{eventId}/requests
+ * Used In the PRIVATE APIs - as REQUEST body
+ * <p> PATCH /users/{userId}/events/{eventId}/requests
  */
 @Getter
 @Setter

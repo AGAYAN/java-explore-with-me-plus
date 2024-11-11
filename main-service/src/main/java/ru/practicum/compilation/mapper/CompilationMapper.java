@@ -39,7 +39,6 @@ public class CompilationMapper {
   }
 
   public static List<CompilationDto> toCompilationDto(final List<Compilation> compilation) {
-    log.debug("Mapping Compilation {} to the CompilationDto.", compilation);
     if (compilation == null || compilation.isEmpty()) {
       return List.of();
     }

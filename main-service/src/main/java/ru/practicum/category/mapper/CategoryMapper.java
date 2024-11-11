@@ -36,13 +36,6 @@ public class CategoryMapper {
                 .setName(categoryDto.getName());
     }
 
-    public static NewCategoryDto toNewCategoryDto(Category category) {
-        log.info("Mapping category to newCategoryDto: {}", category);
-        Objects.requireNonNull(category);
-        return new NewCategoryDto()
-                .setName(category.getName());
-    }
-
     public static List<CategoryDto> toCategoryDtoList(List<Category> categories) {
         log.info("Mapping categories to categoryDtoList: {}", categories);
         Objects.requireNonNull(categories);
@@ -51,10 +44,4 @@ public class CategoryMapper {
                 .toList();
     }
 
-    public static CategoryDto toCategoryDto(NewCategoryDto category) {
-        log.info("Mapping newCategoryDto to categoryDto: {}", category);
-        Objects.requireNonNull(category);
-        return new CategoryDto()
-                .setName(category.getName());
-    }
 }

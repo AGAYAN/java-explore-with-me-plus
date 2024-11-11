@@ -11,7 +11,8 @@ import ru.practicum.validation.MinimumHoursFromNow;
 import ru.practicum.validation.ValidStateAction;
 
 /**
- * PRIVATE API - REQUEST body PATCH /users/{userId}/events/{eventId}
+ * Used in the PRIVATE API - as REQUEST body
+ * <p> PATCH /users/{userId}/events/{eventId}
  */
 @Data
 public class UpdateEventUserRequest {

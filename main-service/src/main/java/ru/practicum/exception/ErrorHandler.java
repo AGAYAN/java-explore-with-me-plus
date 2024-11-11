@@ -15,18 +15,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class ErrorHandler {
 
-  @ExceptionHandler(AlreadyExistsException.class)
-  @ResponseStatus(HttpStatus.CONFLICT)
-  public ResponseEntity<ApiError> handleAlreadyExistsException(final AlreadyExistsException exception) {
-    return buildErrorResponse(exception, HttpStatus.CONFLICT, exception.getMessage());
-  }
-
-  @ExceptionHandler(NotFoundException.class)
-  @ResponseStatus(HttpStatus.NOT_FOUND)
-  public ResponseEntity<ApiError> handleNotFoundException(final NotFoundException exception) {
-    return buildErrorResponse(exception, HttpStatus.NOT_FOUND, exception.getMessage());
-  }
-
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ResponseEntity<ApiError> handleMethodArgumentNotValidException(final MethodArgumentNotValidException exception) {
@@ -39,11 +27,31 @@ public class ErrorHandler {
     return buildErrorResponse(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
   }
 
+  @ExceptionHandler(BadRequestException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ResponseEntity<ApiError> handleBadRequestException(final BadRequestException exception) {
+    log.error("400 Bad Request: {}", exception.getMessage(), exception);
+    return buildErrorResponse(exception, HttpStatus.BAD_REQUEST, exception.getMessage());
+  }
+
+  @ExceptionHandler(NotFoundException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public ResponseEntity<ApiError> handleNotFoundException(final NotFoundException exception) {
+    return buildErrorResponse(exception, HttpStatus.NOT_FOUND, exception.getMessage());
+  }
+
   @ExceptionHandler(ConflictException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   public ResponseEntity<ApiError> handleAlreadyExistsException(final ConflictException exception) {
     return buildErrorResponse(exception, HttpStatus.CONFLICT, exception.getMessage());
   }
+
+  @ExceptionHandler(AlreadyExistsException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ResponseEntity<ApiError> handleAlreadyExistsException(final AlreadyExistsException exception) {
+    return buildErrorResponse(exception, HttpStatus.CONFLICT, exception.getMessage());
+  }
+
 
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
