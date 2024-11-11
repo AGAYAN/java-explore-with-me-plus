@@ -23,6 +23,7 @@ import ru.practicum.event.dto.EventRequestStatusUpdateResult;
 import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.dto.GetEventAdminRequest;
 import ru.practicum.event.dto.NewEventDto;
+import ru.practicum.exception.BadRequestException;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.event.dto.UpdateEventAdminRequest;
 import ru.practicum.event.dto.UpdateEventUserRequest;
@@ -30,7 +31,6 @@ import ru.practicum.event.enums.State;
 import ru.practicum.event.enums.StateAction;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.repository.EventQueryRepository;
 import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.model.StatusRequest;
 import ru.practicum.event.repository.EventRepository;
@@ -51,7 +51,6 @@ import ru.practicum.ViewStatsDto;
 public class EventServiceImpl implements EventService {
 
   private final EventRepository eventRepository;
-  private final EventQueryRepository eventRepositoryImpl;
   private final UserRepository userRepository;
   private final CategoryRepository categoryRepository;
   private final UserService userService;
@@ -165,7 +164,11 @@ public class EventServiceImpl implements EventService {
   @Override
   public List<EventShortDto> getEvents(GetEventPublicParam param, HttpServletRequest request) {
     log.debug("Fetching events with params {}", param);
-    return eventRepositoryImpl.publicGetEvents(
+    if (param.getRangeStart() != null && param.getRangeEnd() != null &&
+            param.getRangeStart().isAfter(param.getRangeEnd())) {
+      throw new BadRequestException("Start date should be before end date");
+    }
+    return eventRepository.publicGetEvents(
             param.getText(),
             param.getCategories(),
             param.getPaid(),
@@ -184,10 +187,10 @@ public class EventServiceImpl implements EventService {
             .orElseThrow(() -> new NotFoundException("Event with id " + eventId + " not found or not published"));
 
     String uri = "/events/" + event.getId();
-    Map<String, Long> viewsMap = getViewsForEvents(event.getEventDate(), event.getEventDate(), List.of(uri));
+    Map<String, Long> viewsMap = getViewsForEvents(event.getCreatedOn(), event.getEventDate(), List.of(uri));
 
     EventFullDto eventFullDto = EventMapper.toFullDto(event);
-    eventFullDto.setViews(eventId);
+    eventFullDto.setViews(viewsMap.getOrDefault(uri, 0L));
 
     return eventFullDto;
   }
@@ -195,12 +198,11 @@ public class EventServiceImpl implements EventService {
   /**
    * Retrieves All existed in DB events (performed by ADMIN).
    */
-  //TODO rename it to the getEvent(GetEventAdminRequest param)
   @Transactional(readOnly = true)
   @Override
-  public List<EventFullDto> adminGetEvent(GetEventAdminRequest param) {
+  public List<EventFullDto> getEvent(GetEventAdminRequest param) {
     log.info("Received request GET /admin/events with param {}", param);
-      return eventRepositoryImpl.adminFindEvents(
+      return eventRepository.adminFindEvents(
         param.getUsers(),
         param.getStates(),
         param.getCategories(),
@@ -214,10 +216,8 @@ public class EventServiceImpl implements EventService {
   /**
    * Updates the specified event with the provided data.(Performed by ADMIN)
    */
-  ///TODO жду реализации GET events/ api с досутпом PUBLIC
-  //TODO  rename it to updateEvent(long eventId, UpdateEventAdminRequest param)
   @Override
-  public EventFullDto adminPatchEvent(long eventId, UpdateEventAdminRequest param) {
+  public EventFullDto updateEvent(long eventId, UpdateEventAdminRequest param) {
     Event event = eventRepository.findById(eventId)
         .orElseThrow(() -> new NotFoundException("Event with id=" + eventId + " was not found"));
 
@@ -272,17 +272,6 @@ public class EventServiceImpl implements EventService {
       event.setTitle(param.getTitle());
     }
 
-//    String start = event.getCreatedOn().toString();
-//    String end = LocalDateTime.now().toString();
-//    log.debug("Get views for event with id={}", eventId);
-//    ViewStatsDto[] views = statsClient.getStats(start, end, new String[]{"/events/" + eventId},
-//        true);
-//    ///TODO думаю что можно оставить как есть пока не нашёл как сделать лучше.
-//    if (views != null && views.length > 0) {
-//      event.setViews(views[0].getHits());
-//    } else {
-//      event.setViews(0L);
-//    }
     setViews(List.of(event));
     setConfirmedRequests(List.of(event));
 
@@ -464,14 +453,11 @@ public class EventServiceImpl implements EventService {
   }
 
   private Map<String, Long> getViewsForEvents(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<String> uris) {
-    // Форматируем временной диапазон в строку
     String start = rangeStart != null ? rangeStart.toString() : LocalDateTime.now().toString();
     String end = rangeEnd != null ? rangeEnd.toString() : LocalDateTime.now().toString();
 
-    // Запрашиваем статистику просмотров через statsClient
-    ViewStatsDto[] stats = statsClient.getStats(start, end, uris.toArray(new String[0]), false);
+    ViewStatsDto[] stats = statsClient.getStats(start, end, uris.toArray(new String[0]), true);
 
-    // Преобразуем массив ViewStatsDto в Map для быстрого доступа по URI
     return Arrays.stream(stats)
             .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits, (a, b) -> b));
   }

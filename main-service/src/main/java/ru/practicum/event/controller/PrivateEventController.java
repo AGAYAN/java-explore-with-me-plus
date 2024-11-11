@@ -101,6 +101,4 @@ public class PrivateEventController {
     log.info("Event participation requests statuses updated {}.", result);
     return ResponseEntity.ok(result);
   }
-
-
 }

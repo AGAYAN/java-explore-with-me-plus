@@ -52,7 +52,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         Join<Event, User> initiatorJoin = eventTable.join("initiator");
         Join<Event, Location> locationJoin = eventTable.join("location");
 
-        // Выбираем необходимые поля с алиасами для использования в маппинге
         query.multiselect(
                 eventTable.get("annotation").alias("annotation"),
                 categoryJoin.get("id").alias("categoryId"),
@@ -73,7 +72,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                 eventTable.get("requestModeration").alias("requestModeration")
         );
 
-        // Создаем предикаты для условий запроса
         Predicate predicate = cb.conjunction();
 
         if (users != null && !users.isEmpty()) {
@@ -81,12 +79,10 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         }
 
         if (states != null && !states.isEmpty()) {
-            // Преобразуем строки в перечисления State
             List<State> stateEnums = states.stream()
                     .map(State::valueOf) // Преобразуем строку в перечисление
                     .collect(Collectors.toList());
 
-            // Фильтруем по перечислениям, которые будут сравниваться со строковыми значениями в базе данных
             predicate = cb.and(predicate, eventTable.get("state").in(stateEnums));
         }
 
@@ -110,7 +106,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
 
         List<Tuple> tuples = typedQuery.getResultList();
 
-        // Маппинг результата Tuple в EventFullDto
         List<EventFullDto> resultList = tuples.stream()
                 .map(tuple -> {
                     String state = tuple.get("state", State.class) != null ? tuple.get("state", State.class).name() : "";
@@ -120,7 +115,7 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                                     tuple.get("categoryId", Long.class),
                                     tuple.get("categoryName", String.class)
                             ),
-                            0, // Если confirmedRequests нужно, получаем его позже
+                            0,
                             tuple.get("createdOn", LocalDateTime.class),
                             tuple.get("description", String.class) != null ? tuple.get("description", String.class) : "",
                             tuple.get("eventDate", LocalDateTime.class),
@@ -143,32 +138,27 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                 })
                 .collect(Collectors.toList());
 
-        // Получаем статистику просмотров для событий
         List<String> uris = resultList.stream()
                 .map(event -> "/events/" + event.getId())
                 .collect(Collectors.toList());
 
         Map<String, Long> viewsMap = getViewsForEvents(rangeStart, rangeEnd, uris);
 
-        // Устанавливаем количество просмотров для каждого EventFullDto
         resultList.forEach(event -> {
             String uri = "/events/" + event.getId();
             event.setViews(viewsMap.getOrDefault(uri, 0L));
         });
 
-        // Получаем количество подтвержденных запросов для каждого события
         Map<Long, Long> confirmedRequestsMap = getConfirmedRequests(
                 resultList.stream().map(EventFullDto::getId).collect(Collectors.toList())
         );
 
-        // Устанавливаем количество подтвержденных запросов для каждого EventFullDto
         resultList.forEach(event -> event.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(),
                 0L).intValue()));
 
         return resultList;
     }
 
-    ///TODO Ждать пока будет готова реализация с CONFIRMED request
     public List<EventShortDto> publicGetEvents(final String text,
                                                final List<Long> categories,
                                                final Boolean paid,
@@ -186,7 +176,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         Join<Event, Category> categoryJoin = eventTable.join("category");
         Join<Event, User> initiatorJoin = eventTable.join("initiator");
 
-        // Выбираем поля с алиасами для использования в маппинге
         query.multiselect(
                 eventTable.get("annotation").alias("annotation"),
                 categoryJoin.get("id").alias("categoryId"),
@@ -199,7 +188,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                 eventTable.get("title").alias("title")
         );
 
-        // Создаем предикаты для условий запроса
         Predicate predicate = cb.conjunction();
         predicate = cb.and(predicate, cb.equal(eventTable.get("state"), State.PUBLISHED));
 
@@ -233,7 +221,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
 
         query.where(predicate);
 
-        // Сортировка по полю eventDate
         if (sort != null && sort.equals(SortType.EVENT_DATE)) {
             query.orderBy(cb.asc(eventTable.get("eventDate")));
         }
@@ -244,7 +231,6 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
 
         List<Tuple> tuples = typedQuery.getResultList();
 
-        // Маппинг результата Tuple в EventShortDto
         List<EventShortDto> resultList = tuples.stream()
                 .map(tuple -> new EventShortDto(
                         tuple.get("annotation", String.class),
@@ -263,20 +249,17 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                 ))
                 .collect(Collectors.toList());
 
-        // Получаем статистику просмотров для событий
         List<String> uris = resultList.stream()
                 .map(event -> "/events/" + event.getId())
                 .collect(Collectors.toList());
 
         Map<String, Long> viewsMap = getViewsForEvents(rangeStart, rangeEnd, uris);
 
-        // Устанавливаем количество просмотров для каждого EventShortDto
         resultList.forEach(event -> {
             String uri = "/events/" + event.getId();
             event.setViews(viewsMap.getOrDefault(uri, 0L));
         });
 
-        // Сортировка по количеству просмотров, если указано
         if (sort != null && sort.equals(SortType.VIEWS)) {
             resultList.sort(Comparator.comparing(EventShortDto::getViews).reversed());
         }
@@ -286,14 +269,11 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
 
 
     private Map<String, Long> getViewsForEvents(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<String> uris) {
-        // Форматируем временной диапазон в строку
         String start = rangeStart != null ? rangeStart.toString() : LocalDateTime.now().toString();
         String end = rangeEnd != null ? rangeEnd.toString() : LocalDateTime.now().toString();
 
-        // Запрашиваем статистику просмотров
-        ViewStatsDto[] stats = statsClient.getStats(start, end, uris.toArray(new String[0]), false);
+        ViewStatsDto[] stats = statsClient.getStats(start, end, uris.toArray(new String[0]), true);
 
-        // Преобразуем массив ViewStatsDto в Map для быстрого доступа по URI
         return Arrays.stream(stats)
                 .collect(Collectors.toMap(ViewStatsDto::getUri, ViewStatsDto::getHits, (a, b) -> b));
     }

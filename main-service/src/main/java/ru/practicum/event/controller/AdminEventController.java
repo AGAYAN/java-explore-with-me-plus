@@ -41,12 +41,12 @@ public class AdminEventController {
             .setFrom(from)
             .setSize(size);
         log.info("Received request GET /admin/events with param {}", param);
-        return eventService.adminGetEvent(param);
+        return eventService.getEvent(param);
     }
 
     @PatchMapping("/{eventId}")
     public EventFullDto adminPatchEvent(@PathVariable int eventId, @RequestBody @Validated UpdateEventAdminRequest param) {
         log.info("Received request PATCH /admin/events/{} with param {}", eventId, param);
-        return eventService.adminPatchEvent(eventId, param);
+        return eventService.updateEvent(eventId, param);
     }
 }

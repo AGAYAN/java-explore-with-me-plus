@@ -22,11 +22,9 @@ public interface EventService {
 
   EventFullDto getEvent(Long initiatorId, Long eventId);
 
-  //TODO rename it to the getEvent(GetEventAdminRequest param)
-  List<EventFullDto> adminGetEvent(GetEventAdminRequest param);
+  List<EventFullDto> getEvent(GetEventAdminRequest param);
 
-  //TODO  rename it to updateEvent(long eventId, UpdateEventAdminRequest param)
-  EventFullDto adminPatchEvent(long eventId, UpdateEventAdminRequest param);
+  EventFullDto updateEvent(long eventId, UpdateEventAdminRequest param);
 
   EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto);
 
