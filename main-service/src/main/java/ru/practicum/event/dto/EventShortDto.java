@@ -10,7 +10,8 @@ import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.user.dto.UserShortDto;
 
 /**
- * PRIVATE API - RESPONSE GET /users/{userId}/events
+ * Used in the PRIVATE API - as RESPONSE
+ * <p> GET /users/{userId}/events
  */
 @Data
 @AllArgsConstructor

@@ -12,7 +12,8 @@ import ru.practicum.event.model.Location;
 import ru.practicum.validation.MinimumHoursFromNow;
 
 /**
- * PRIVATE API - REQUEST body POST /users/{userId}/events
+ * Used in the PRIVATE API - as REQUEST body
+ * <p> POST /users/{userId}/events
  */
 @Data
 public class NewEventDto {

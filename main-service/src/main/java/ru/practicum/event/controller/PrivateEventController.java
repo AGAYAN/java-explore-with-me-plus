@@ -40,10 +40,8 @@ public class PrivateEventController {
       @PathVariable("userId") @NotNull @Positive Long userId,
       @Validated @RequestBody NewEventDto eventDto) {
     log.info("Request received POST /users/{}/events to add event {}", userId, eventDto);
-
     final EventFullDto eventSaved = eventService.addEvent(userId, eventDto);
     log.info("Event added successfully with ID={}.", eventSaved.getId());
-
     return ResponseEntity.status(HttpStatus.CREATED).body(eventSaved);
   }
 

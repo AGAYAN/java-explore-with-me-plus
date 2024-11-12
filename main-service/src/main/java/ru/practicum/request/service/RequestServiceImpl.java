@@ -99,18 +99,4 @@ public class RequestServiceImpl implements RequestService {
     return RequestMapper.mapToDto(participationRequest);
   }
 
-  @Override
-  public List<ParticipationRequestDto> getRequestById(final Long userId, final Long eventId) {
-    userRepository.findById(userId)
-        .orElseThrow(() -> new NotFoundException("Нету такого user"));
-
-    eventRepository.findById(eventId)
-        .orElseThrow(() -> new NotFoundException("Нету такого event"));
-
-    return requestRepository.findAllByEventIdAndEventInitiatorId(eventId, userId)
-        .stream()
-        .map(RequestMapper::mapToDto)
-        .toList();
-  }
-
 }

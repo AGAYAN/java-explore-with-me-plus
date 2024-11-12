@@ -12,7 +12,8 @@ import ru.practicum.validation.MinimumHoursFromNow;
 import ru.practicum.validation.ValidStateAction;
 
 /**
- * ADMIN API - REQUEST body PATCH admin/events/{eventId}
+ * Used in the ADMIN API - as REQUEST body
+ * <p> PATCH admin/events/{eventId}
  */
 @Getter
 @Setter
@@ -29,7 +30,7 @@ public class UpdateEventAdminRequest {
   @Size(min = 20, max = 7000, message = "Description must be between 20 and 7000 characters.")
   private String description;
 
-  @MinimumHoursFromNow(hoursInFuture = 1)
+  @MinimumHoursFromNow(hoursInFuture = 1, message = "EventDAte should be at least in 1 hour from now.")
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
   private LocalDateTime eventDate;
 

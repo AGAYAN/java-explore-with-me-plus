@@ -41,7 +41,7 @@ public class AdminEventController {
             .setFrom(from)
             .setSize(size);
         log.info("Received request GET /admin/events with param {}", param);
-        return eventService.getEvent(param);
+        return eventService.getEvents(param);
     }
 
     @PatchMapping("/{eventId}")

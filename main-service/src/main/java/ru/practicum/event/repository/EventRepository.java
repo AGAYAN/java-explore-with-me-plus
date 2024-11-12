@@ -1,6 +1,7 @@
 package ru.practicum.event.repository;
 
 import java.util.Optional;
+import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,4 +33,7 @@ public interface EventRepository extends JpaRepository<Event, Long>, EventQueryR
   boolean existsByIdAndInitiatorId(Long eventId, Long userId);
 
   boolean existsByCategoryId(Long id);
+
+  Set<Event> findAllDistinctByIdIn(Set<Long> eventIds);
 }
+

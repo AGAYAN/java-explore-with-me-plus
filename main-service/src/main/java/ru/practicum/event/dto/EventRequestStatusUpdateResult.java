@@ -7,9 +7,8 @@ import lombok.experimental.Accessors;
 import ru.practicum.request.dto.ParticipationRequestDto;
 
 /**
- * RESPONSE
- * PRIVATE API
- *
+ * Used in the PRIVATE API as RESPONSE
+ * <p>
  * PATCH /users/{userId}/events/{eventId}/requests
  */
 @Data

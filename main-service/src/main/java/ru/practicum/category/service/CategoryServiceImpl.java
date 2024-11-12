@@ -27,9 +27,7 @@ public class CategoryServiceImpl implements CategoryService {
   private final EventRepository eventRepository;
 
   /**
-   * Метод добавления категории в базу данных с уровнем доступа Admin
-   *
-   * @return NewCategoryDto
+   * Adding new category to the DB by Admin
    */
   @Override
   public CategoryDto addCategory(NewCategoryDto dto) {
@@ -45,6 +43,9 @@ public class CategoryServiceImpl implements CategoryService {
     return CategoryMapper.toCategoryDto(category);
   }
 
+  /**
+   * Retrieves all available categories.
+   */
   @Override
   @Transactional(readOnly = true)
   public List<CategoryDto> getCategory(int from, int size) {
@@ -58,6 +59,9 @@ public class CategoryServiceImpl implements CategoryService {
     return CategoryMapper.toCategoryDtoList(categoryPage.getContent());
   }
 
+  /**
+   * Retrieves Category information with specified ID.
+   */
   @Override
   @Transactional(readOnly = true)
   public CategoryDto getCategoryById(Long id) {
@@ -71,6 +75,9 @@ public class CategoryServiceImpl implements CategoryService {
         .orElseThrow(() -> new NotFoundException("Category with id " + id + " not found"));
   }
 
+  /**
+   * Updates category name for a category with specified ID.
+   */
   @Override
   public CategoryDto updateCategory(Long id, NewCategoryDto dto) {
     log.info("Update category: {}", dto);
@@ -85,6 +92,9 @@ public class CategoryServiceImpl implements CategoryService {
     return CategoryMapper.toCategoryDto(category);
   }
 
+  /**
+   * Deletes category record from the DB, ensuring it is not related to any event.
+   */
   @Override
   public void deleteCategory(Long id) {
     log.info("Delete category by id: {}", id);

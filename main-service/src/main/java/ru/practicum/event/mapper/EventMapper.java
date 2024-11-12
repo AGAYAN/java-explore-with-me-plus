@@ -40,8 +40,6 @@ public class EventMapper {
         .setTitle(eventDto.getTitle())
         .setRequestModeration(eventDto.getRequestModeration())
         .setState(State.PENDING);
-
-
   }
 
   public static EventFullDto toFullDto(final Event event) {

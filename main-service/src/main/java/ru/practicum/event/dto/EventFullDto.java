@@ -10,12 +10,20 @@ import ru.practicum.event.model.Location;
 import ru.practicum.user.dto.UserShortDto;
 
 /**
- * ADMIN API - RESPONSE GET /admin/events PATCH admin/events/{eventId}
+ * Used in APIs :
+ * <ul>
+ *   <li>ADMIN  - as RESPONSE</li>
  * <p>
- * PUBLIC API - RESPONSE GET /events GET /events/{id}
+ *     GET /admin/events PATCH admin/events/{eventId};
  * <p>
- * PRIVATE API - RESPONSE POST /users/{userId}/events GET /users/{userId}/events/{eventId} PATCH
- * /users/{userId}/events/{eventId}
+ *   <li>PUBLIC - as RESPONSE </li>
+ * <p>
+ *     GET /events GET /events/{id};
+ * <p>
+ *  <li>PRIVATE- as RESPONSE</li>
+ * <p> POST /users/{userId}/events
+ * <p> GET /users/{userId}/events/{eventId}
+ * <p> PATCH /users/{userId}/events/{eventId}
  */
 @Data
 @NoArgsConstructor
@@ -57,9 +65,11 @@ public class EventFullDto {
 
   private Long views;
 
-  public EventFullDto(String annotation, CategoryDto category, Integer confirmedRequests, LocalDateTime createdOn,
+  public EventFullDto(String annotation, CategoryDto category, Integer confirmedRequests,
+                      LocalDateTime createdOn,
                       String description, LocalDateTime eventDate, Long id, UserShortDto initiator,
-                      Location location, Boolean paid, Integer participantLimit, LocalDateTime publishedOn,
+                      Location location, Boolean paid, Integer participantLimit,
+                      LocalDateTime publishedOn,
                       Boolean requestModeration, String state, String title) {
     this.annotation = annotation;
     this.category = category;

@@ -225,7 +225,7 @@ class StatsControllerTest {
     }
 
     mvc.perform(requestBuilder)
-        .andExpect(status().isInternalServerError());
+        .andExpect(status().isBadRequest());
 
     verifyNoInteractions(statsService);
 
