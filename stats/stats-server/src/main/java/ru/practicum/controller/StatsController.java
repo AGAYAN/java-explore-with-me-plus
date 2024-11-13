@@ -32,7 +32,7 @@ public class StatsController {
   @PostMapping("/hit")
   @ResponseStatus(HttpStatus.CREATED)
   public void saveEndpointHit(@Valid @RequestBody final EndPointHitDto endpointHit) {
-    log.info("Received request POST /hit with hit info {}", endpointHit);
+    log.info("Received request POST /hit with hit info {}", endpointHit.getUri());
     statsService.saveEndpointHit(endpointHit);
   }
 

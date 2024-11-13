@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndPointHitDto;
 import ru.practicum.ViewStatsDto;
+import ru.practicum.exception.BadRequestException;
 import ru.practicum.mapper.StatsMapper;
 import ru.practicum.model.EndPointHit;
 import ru.practicum.repository.StatsRepository;
@@ -41,11 +42,11 @@ public class StatsServiceImpl implements StatsService {
   private void validateStartEndDates(final LocalDateTime start, final LocalDateTime end) {
     if (start == null || end == null) {
       log.warn("Start or end date are/is null.");
-      throw new IllegalArgumentException("Start and end date must not be null.");
+      throw new BadRequestException("Start and end date must not be null.");
     }
     if (start.isAfter(end)) {
       log.warn("Start date is after end date.");
-      throw new IllegalArgumentException("Start date must be before end date.");
+      throw new BadRequestException("Start date must be before end date.");
     }
   }
 }
