@@ -50,18 +50,18 @@ public class EventMapper {
         .setAnnotation(event.getAnnotation())
         .setCategory(CategoryMapper.toCategoryDto(event.getCategory()))
         .setConfirmedRequests(event.getConfirmedRequests())
-        .setCreatedOn(event.getCreatedOn())
-        .setDescription(event.getDescription())
         .setEventDate(event.getEventDate())
         .setInitiator(UserMapper.mapToUserShortDto(event.getInitiator()))
-        .setLocation(event.getLocation())
         .setPaid(event.getPaid())
+        .setTitle(event.getTitle())
+        .setViews(event.getViews())
+        .setCreatedOn(event.getCreatedOn())
+        .setDescription(event.getDescription())
+        .setLocation(event.getLocation())
         .setParticipantLimit(event.getParticipantLimit())
         .setPublishedOn(event.getPublishedOn())
         .setRequestModeration(event.getRequestModeration())
-        .setState(event.getState().name())
-        .setTitle(event.getTitle())
-        .setViews(event.getViews());
+        .setState(event.getState().name());
   }
 
   public static EventShortDto toShortDto(final Event event) {

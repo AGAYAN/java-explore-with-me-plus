@@ -39,5 +39,4 @@ public class EventShortDto {
     this.paid = paid;
     this.title = title;
   }
-
 }

@@ -14,7 +14,7 @@ import java.util.Objects;
 public class CategoryMapper {
 
     public static CategoryDto toCategoryDto(Category category) {
-        log.info("Mapping category to categoryDto: {}", category);
+        log.debug("Mapping category to categoryDto: {}", category);
         Objects.requireNonNull(category);
         return new CategoryDto()
                 .setId(category.getId())
@@ -22,7 +22,7 @@ public class CategoryMapper {
     }
 
     public static Category toCategory(CategoryDto categoryDto) {
-        log.info("Mapping categoryDto to category: {}", categoryDto);
+        log.debug("Mapping categoryDto to category: {}", categoryDto);
         Objects.requireNonNull(categoryDto);
         return new Category()
                 .setId(categoryDto.getId())
@@ -30,14 +30,14 @@ public class CategoryMapper {
     }
 
     public static Category toCategory(NewCategoryDto categoryDto) {
-        log.info("Mapping newCategoryDto to category: {}", categoryDto);
+        log.debug("Mapping newCategoryDto to category: {}", categoryDto);
         Objects.requireNonNull(categoryDto);
         return new Category()
                 .setName(categoryDto.getName());
     }
 
     public static List<CategoryDto> toCategoryDtoList(List<Category> categories) {
-        log.info("Mapping categories to categoryDtoList: {}", categories);
+        log.debug("Mapping categories to categoryDtoList: {}", categories);
         Objects.requireNonNull(categories);
         return categories.stream()
                 .map(CategoryMapper::toCategoryDto)

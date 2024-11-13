@@ -100,65 +100,15 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
 
         query.where(predicate);
 
-        TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-        typedQuery.setFirstResult(from);
-        typedQuery.setMaxResults(size);
+        List<Tuple> tuples = fetchResults(query, from, size);
+        List<EventFullDto> resultList = mapToEventFullDtos(tuples);
 
-        List<Tuple> tuples = typedQuery.getResultList();
-
-        List<EventFullDto> resultList = tuples.stream()
-                .map(tuple -> {
-                    String state = tuple.get("state", State.class) != null ? tuple.get("state", State.class).name() : "";
-                    return new EventFullDto(
-                            tuple.get("annotation", String.class) != null ? tuple.get("annotation", String.class) : "",
-                            new CategoryDto(
-                                    tuple.get("categoryId", Long.class),
-                                    tuple.get("categoryName", String.class)
-                            ),
-                            0,
-                            tuple.get("createdOn", LocalDateTime.class),
-                            tuple.get("description", String.class) != null ? tuple.get("description", String.class) : "",
-                            tuple.get("eventDate", LocalDateTime.class),
-                            tuple.get("eventId", Long.class),
-                            new UserShortDto(
-                                    tuple.get("initiatorId", Long.class),
-                                    tuple.get("initiatorName", String.class)
-                            ),
-                            new Location(
-                                    tuple.get("lat", Float.class),
-                                    tuple.get("lon", Float.class)
-                            ),
-                            tuple.get("paid", Boolean.class),
-                            tuple.get("participantLimit", Integer.class),
-                            tuple.get("publishedOn", LocalDateTime.class),
-                            tuple.get("requestModeration", Boolean.class),
-                            state, // Преобразованное состояние
-                            tuple.get("title", String.class)
-                    );
-                })
-                .collect(Collectors.toList());
-
-        List<String> uris = resultList.stream()
-                .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
-
-        Map<String, Long> viewsMap = getViewsForEvents(rangeStart, rangeEnd, uris);
-
-        resultList.forEach(event -> {
-            String uri = "/events/" + event.getId();
-            event.setViews(viewsMap.getOrDefault(uri, 0L));
-        });
-
-        Map<Long, Long> confirmedRequestsMap = getConfirmedRequests(
-                resultList.stream().map(EventFullDto::getId).collect(Collectors.toList())
-        );
-
-        resultList.forEach(event -> event.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(),
-                0L).intValue()));
+        populateEventDetails(resultList, rangeStart, rangeEnd);
 
         return resultList;
     }
 
+    @Override
     public List<EventShortDto> publicGetEvents(final String text,
                                                final List<Long> categories,
                                                final Boolean paid,
@@ -225,40 +175,11 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
             query.orderBy(cb.asc(eventTable.get("eventDate")));
         }
 
-        TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
-        typedQuery.setFirstResult(from);
-        typedQuery.setMaxResults(size);
+        List<Tuple> tuples = fetchResults(query, from, size);
 
-        List<Tuple> tuples = typedQuery.getResultList();
+        List<EventShortDto> resultList = mapToEventShortDtos(tuples);
 
-        List<EventShortDto> resultList = tuples.stream()
-                .map(tuple -> new EventShortDto(
-                        tuple.get("annotation", String.class),
-                        new CategoryDto(
-                                tuple.get("categoryId", Long.class),
-                                tuple.get("categoryName", String.class)
-                        ),
-                        tuple.get("eventDate", LocalDateTime.class),
-                        tuple.get("eventId", Long.class),
-                        new UserShortDto(
-                                tuple.get("initiatorId", Long.class),
-                                tuple.get("initiatorName", String.class)
-                        ),
-                        tuple.get("paid", Boolean.class),
-                        tuple.get("title", String.class)
-                ))
-                .collect(Collectors.toList());
-
-        List<String> uris = resultList.stream()
-                .map(event -> "/events/" + event.getId())
-                .collect(Collectors.toList());
-
-        Map<String, Long> viewsMap = getViewsForEvents(rangeStart, rangeEnd, uris);
-
-        resultList.forEach(event -> {
-            String uri = "/events/" + event.getId();
-            event.setViews(viewsMap.getOrDefault(uri, 0L));
-        });
+        populateEventShortDetails(resultList, rangeStart, rangeEnd);
 
         if (sort != null && sort.equals(SortType.VIEWS)) {
             resultList.sort(Comparator.comparing(EventShortDto::getViews).reversed());
@@ -267,6 +188,52 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
         return resultList;
     }
 
+    private List<Tuple> fetchResults(CriteriaQuery<Tuple> query, int from, int size) {
+        TypedQuery<Tuple> typedQuery = entityManager.createQuery(query);
+        typedQuery.setFirstResult(from);
+        typedQuery.setMaxResults(size);
+        return typedQuery.getResultList();
+    }
+
+    private void populateEventShortDetails(List<EventShortDto> eventFullDtos, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        List<String> uris = eventFullDtos.stream()
+            .map(event -> "/events/" + event.getId())
+            .collect(Collectors.toList());
+
+        Map<String, Long> viewsMap = getViewsForEvents(rangeStart, rangeEnd, uris);
+
+        eventFullDtos.forEach(event -> {
+            String uri = "/events/" + event.getId();
+            event.setViews(viewsMap.getOrDefault(uri, 0L));
+        });
+
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequests(
+            eventFullDtos.stream().map(EventShortDto::getId).collect(Collectors.toList())
+        );
+
+        eventFullDtos.forEach(event -> event.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(),
+            0L).intValue()));
+    }
+
+    private void populateEventDetails(List<EventFullDto> eventFullDtos, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        List<String> uris = eventFullDtos.stream()
+            .map(event -> "/events/" + event.getId())
+            .collect(Collectors.toList());
+
+        Map<String, Long> viewsMap = getViewsForEvents(rangeStart, rangeEnd, uris);
+
+        eventFullDtos.forEach(event -> {
+            String uri = "/events/" + event.getId();
+            event.setViews(viewsMap.getOrDefault(uri, 0L));
+        });
+
+        Map<Long, Long> confirmedRequestsMap = getConfirmedRequests(
+            eventFullDtos.stream().map(EventFullDto::getId).collect(Collectors.toList())
+        );
+
+        eventFullDtos.forEach(event -> event.setConfirmedRequests(confirmedRequestsMap.getOrDefault(event.getId(),
+            0L).intValue()));
+    }
 
     private Map<String, Long> getViewsForEvents(LocalDateTime rangeStart, LocalDateTime rangeEnd, List<String> uris) {
         String start = rangeStart != null ? rangeStart.toString() : LocalDateTime.now().toString();
@@ -305,5 +272,53 @@ public class EventQueryRepositoryImpl implements EventQueryRepository {
                         tuple -> tuple.get(1, Long.class)
                 ));
     }
+
+    private List<EventFullDto> mapToEventFullDtos(List<Tuple> tuples) {
+        return tuples.stream().map(tuple -> {
+            String state = Optional.ofNullable(tuple.get("state", State.class)).map(State::name).orElse("");
+
+            return new EventFullDto(
+                tuple.get("annotation", String.class),
+                new CategoryDto(tuple.get("categoryId", Long.class), tuple.get("categoryName", String.class)),
+                0,
+                tuple.get("createdOn", LocalDateTime.class),
+                Optional.ofNullable(tuple.get("description", String.class)).orElse(""),
+                tuple.get("eventDate", LocalDateTime.class),
+                tuple.get("eventId", Long.class),
+                new UserShortDto(tuple.get("initiatorId", Long.class), tuple.get("initiatorName", String.class)),
+                new Location(tuple.get("lat", Float.class), tuple.get("lon", Float.class)),
+                tuple.get("paid", Boolean.class),
+                tuple.get("participantLimit", Integer.class),
+                tuple.get("publishedOn", LocalDateTime.class),
+                tuple.get("requestModeration", Boolean.class),
+                state,
+                tuple.get("title", String.class)
+            );
+        }).collect(Collectors.toList());
+    }
+
+    private List<EventShortDto> mapToEventShortDtos(List<Tuple> tuples) {
+        return tuples.stream()
+            .map(tuple -> new EventShortDto(
+                tuple.get("annotation", String.class),
+                new CategoryDto(
+                    tuple.get("categoryId", Long.class),
+                    tuple.get("categoryName", String.class)
+                ),
+                tuple.get("eventDate", LocalDateTime.class),
+                tuple.get("eventId", Long.class),
+                new UserShortDto(
+                    tuple.get("initiatorId", Long.class),
+                    tuple.get("initiatorName", String.class)
+                ),
+                tuple.get("paid", Boolean.class),
+                tuple.get("title", String.class)
+            ))
+            .collect(Collectors.toList());
+    }
+
+
+
+
 
 }

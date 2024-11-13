@@ -66,9 +66,6 @@ public class CategoryServiceImpl implements CategoryService {
   @Transactional(readOnly = true)
   public CategoryDto getCategoryById(Long id) {
     log.info("Get category by id: {}", id);
-    if (!repository.existsById(id)) {
-      throw new NotFoundException("Category with id " + id + " not found");
-    }
 
     return repository.findById(id)
         .map(CategoryMapper::toCategoryDto)

@@ -89,7 +89,6 @@ class CategoryServiceImplTest {
         category.setId(1L);
         category.setName("Existing Category");
 
-        when(repository.existsById(anyLong())).thenReturn(true);
         when(repository.findById(1L)).thenReturn(Optional.of(category));
 
         CategoryDto result = categoryService.getCategoryById(1L);
@@ -100,7 +99,7 @@ class CategoryServiceImplTest {
 
     @Test
     void getCategoryById_ShouldThrowException_WhenIdNotFound() {
-        when(repository.existsById(anyLong())).thenReturn(false);
+        doThrow(NotFoundException.class).when(repository).findById(anyLong());
 
         assertThrows(NotFoundException.class, () -> categoryService.getCategoryById(1L));
     }

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface EventQueryRepository {
 
-    public List<EventFullDto> adminFindEvents(final List<Long> users,
+  List<EventFullDto> adminFindEvents(final List<Long> users,
                                               final List<String> states,
                                               final List<Long> categories,
                                               final LocalDateTime rangeStart,
@@ -17,7 +17,7 @@ public interface EventQueryRepository {
                                               int from,
                                               int size);
 
-    public List<EventShortDto> publicGetEvents(final String text,
+  List<EventShortDto> publicGetEvents(final String text,
                                                    final List<Long> categories,
                                                    final Boolean paid,
                                                    final LocalDateTime rangeStart,

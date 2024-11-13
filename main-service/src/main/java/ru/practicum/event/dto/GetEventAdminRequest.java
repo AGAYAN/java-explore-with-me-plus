@@ -26,6 +26,6 @@ public class GetEventAdminRequest {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime rangeEnd;
 
-    private Integer from = 0;
-    private Integer size = 10;
+    private Integer from;
+    private Integer size;
 }
