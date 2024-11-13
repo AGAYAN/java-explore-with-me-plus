@@ -24,7 +24,7 @@ public class PrivateCommentController {
     public CommentDto addComments(
             @PathVariable @NonNull Long userId,
             @RequestParam @NonNull Long eventId,
-            @RequestBody @Valid @NonNull CommentDto commentDto) {
+            @RequestBody @NonNull CommentDto commentDto) {
 
         commentDto.setUserId(userId);
         commentDto.setEventId(eventId);

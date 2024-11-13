@@ -12,6 +12,7 @@ import ru.practicum.exception.ConflictException;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +36,13 @@ public class CommentServiceImpl implements CommentService{
                 .orElseThrow(() -> new ConflictException("Ошибка нету такого Event"));
 
         Comment comment = CommentMapper.mapTo(commentDto, user, event);
+
+        comment.setCreated(LocalDateTime.now());
+
+        if (user.getId().equals(event.getInitiator().getId())) {
+            comment.setInitiator(true);
+        }
+
         Comment saveComment = commentRepository.save(comment);
         return CommentMapper.mapToCommentDto(saveComment);
 
@@ -73,6 +81,7 @@ public class CommentServiceImpl implements CommentService{
         }
 
         comment.setContent(commentDto.getContent());
+        comment.setCreated(LocalDateTime.now());
         Comment update = commentRepository.save(comment);
 
         return CommentMapper.mapToCommentDto(update);

@@ -1,11 +1,14 @@
 package ru.practicum.comment.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import ru.practicum.event.model.Event;
 import ru.practicum.user.model.User;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -27,5 +30,10 @@ public class Comment {
     @JoinColumn(name = "event_id")
     @JsonIgnore
     private Event eventId;
+    @Column(name = "is_initiator")
+    private boolean isInitiator = false;
     private String content;
+    @Column(name = "created")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime created;
 }
