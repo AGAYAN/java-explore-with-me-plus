@@ -1,6 +1,7 @@
 package ru.practicum.comment.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,9 @@ public class PrivateCommentController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CommentDto addComments(
-            @PathVariable @NonNull Long userId,
-            @RequestParam @NonNull Long eventId,
-            @RequestBody @NonNull CommentDto commentDto) {
+            @PathVariable Long userId,
+            @RequestParam @Positive Long eventId,
+            @RequestBody @Valid CommentDto commentDto) {
 
         commentDto.setUserId(userId);
         commentDto.setEventId(eventId);
@@ -42,15 +43,15 @@ public class PrivateCommentController {
 
     @PatchMapping("/{commentId}")
     public ResponseEntity<CommentDto> updateComment(
-            @PathVariable @NonNull Long userId,
-            @PathVariable @NonNull Long commentId,
-            @RequestBody @Valid @NonNull CommentDto commentDto) {
+            @PathVariable Long userId,
+            @PathVariable Long commentId,
+            @RequestBody @Valid CommentDto commentDto) {
         CommentDto comment  = commentService.updateUserComment(userId, commentId, commentDto);
         return ResponseEntity.ok(comment);
     }
 
     @GetMapping
-    public ResponseEntity<List<Comment>> getByUserComment(@PathVariable @NonNull Long userId) {
+    public ResponseEntity<List<Comment>> getByUserComment(@PathVariable Long userId) {
         List<Comment> comments = commentService.getByUserComment(userId);
         return ResponseEntity.ok(comments);
     }

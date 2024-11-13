@@ -17,8 +17,8 @@ public class CommentMapper {
         Objects.requireNonNull(comment);
         return new CommentDto()
                 .setId(comment.getId())
-                .setUserId(comment.getUserId().getId())
-                .setEventId(comment.getEventId().getId())
+                .setUserId(comment.getUser().getId())
+                .setEventId(comment.getUser().getId())
                 .setContent(comment.getContent());
     }
 
@@ -27,8 +27,8 @@ public class CommentMapper {
         Objects.requireNonNull(comment);
         return new Comment()
                 .setId(comment.getId())
-                .setUserId(user)
-                .setEventId(event)
+                .setUser(user)
+                .setEvent(event)
                 .setContent(comment.getContent());
     }
 

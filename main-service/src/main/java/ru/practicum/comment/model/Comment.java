@@ -22,14 +22,14 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     @JsonIgnore
-    private User userId;
-    @ManyToOne
+    private User user;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "event_id")
     @JsonIgnore
-    private Event eventId;
+    private Event event;
     @Column(name = "is_initiator")
     private boolean isInitiator = false;
     private String content;

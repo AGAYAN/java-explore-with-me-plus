@@ -9,6 +9,7 @@ import ru.practicum.comment.repository.CommentRepository;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.exception.ConflictException;
+import ru.practicum.exception.NotFoundException;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
@@ -30,10 +31,10 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public CommentDto addComment(CommentDto commentDto) {
         User user = userRepository.findById(commentDto.getUserId())
-                .orElseThrow(() -> new ConflictException("Ошибка нету такого User"));
+                .orElseThrow(() -> new NotFoundException("Ошибка нету такого User"));
 
         Event event = eventRepository.findById(commentDto.getEventId())
-                .orElseThrow(() -> new ConflictException("Ошибка нету такого Event"));
+                .orElseThrow(() -> new NotFoundException("Ошибка нету такого Event"));
 
         Comment comment = CommentMapper.mapTo(commentDto, user, event);
 
@@ -55,9 +56,9 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public void deleteUserComment(Long userId, Long commentId) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ConflictException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
 
-        if (!comment.getUserId().getId().equals(userId)) {
+        if (!comment.getUser().getId().equals(userId)) {
             throw new ConflictException("У вас нет прав на удаление этого комментария");
         }
 
@@ -71,17 +72,16 @@ public class CommentServiceImpl implements CommentService{
     @Override
     public CommentDto updateUserComment(Long userId, Long commentId, CommentDto commentDto) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new ConflictException("Комментарий не найден"));
+                .orElseThrow(() -> new NotFoundException("Комментарий не найден"));
 
         userRepository.findById(userId)
                 .orElseThrow(() -> new ConflictException("Ошибка нету такого User"));
 
-        if (!comment.getUserId().getId().equals(userId)) {
+        if (!comment.getUser().getId().equals(userId)) {
             throw new ConflictException("У вас нет прав на удаление этого комментария");
         }
 
         comment.setContent(commentDto.getContent());
-        comment.setCreated(LocalDateTime.now());
         Comment update = commentRepository.save(comment);
 
         return CommentMapper.mapToCommentDto(update);
@@ -92,17 +92,11 @@ public class CommentServiceImpl implements CommentService{
      * EventID comment to user
      */
     @Override
-    public List<Comment> getAllEvent(Long eventId) {
+    public List<Comment> getAllEventComments(Long eventId) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ConflictException("Ошибка нету такого Event"));
 
-        List<Comment> comments = commentRepository.findCommentByEventId(event);
-
-        if (comments.isEmpty()) {
-            throw new ConflictException("Нет комментариев для данного события");
-        }
-
-        return comments;
+        return commentRepository.findCommentByEventId(event);
     }
 
     /**

@@ -1,5 +1,6 @@
 package ru.practicum.comment.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -21,6 +22,8 @@ public class CommentDto {
     private Long eventId;
     private boolean isInitiator;
     @Size(min=1, max=5000)
+    @NotBlank
     private String content;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime created;
 }

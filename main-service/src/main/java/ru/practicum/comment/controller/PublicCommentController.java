@@ -20,8 +20,8 @@ public class PublicCommentController {
     private final CommentService commentService;
 
     @GetMapping
-    public ResponseEntity<List<Comment>> getByEvent(@PathVariable @NonNull Long eventId) {
-        List<Comment> comments = commentService.getAllEvent(eventId);
+    public ResponseEntity<List<Comment>> getByEvent(@PathVariable Long eventId) {
+        List<Comment> comments = commentService.getAllEventComments(eventId);
         return ResponseEntity.ok(comments);
     }
 }

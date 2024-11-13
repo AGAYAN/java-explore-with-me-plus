@@ -12,7 +12,7 @@ public interface CommentService {
 
     CommentDto updateUserComment(Long userId, Long commentId, CommentDto commentDto);
 
-    List<Comment> getAllEvent(Long eventId);
+    List<Comment> getAllEventComments(Long eventId);
 
     List<Comment> getByUserComment(Long userId);
 
