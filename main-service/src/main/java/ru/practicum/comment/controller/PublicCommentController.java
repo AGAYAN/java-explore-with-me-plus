@@ -1,6 +1,8 @@
 package ru.practicum.comment.controller;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +20,8 @@ public class PublicCommentController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<Comment> getByEvent(@PathVariable Long eventId) {
-        return commentService.getAllEvent(eventId);
+    public ResponseEntity<List<Comment>> getByEvent(@PathVariable @NonNull Long eventId) {
+        List<Comment> comments = commentService.getAllEvent(eventId);
+        return ResponseEntity.ok(comments);
     }
 }

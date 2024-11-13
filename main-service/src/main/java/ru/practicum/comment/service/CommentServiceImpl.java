@@ -40,7 +40,6 @@ public class CommentServiceImpl implements CommentService{
 
     }
 
-
     /**
      * http://localhost:8080/users/1/comments/1
      * delete user comment
@@ -56,7 +55,6 @@ public class CommentServiceImpl implements CommentService{
 
         commentRepository.delete(comment);
     }
-
 
     /**
      * http://localhost:8080/users/2/comments/2
@@ -79,7 +77,6 @@ public class CommentServiceImpl implements CommentService{
 
         return CommentMapper.mapToCommentDto(update);
     }
-
 
     /**
      * http://localhost:8080/events/11/comments
