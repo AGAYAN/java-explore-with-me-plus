@@ -512,20 +512,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/events/:eventId/comments",
+              "raw": "{{baseUrl}}/events/{{eventId}}/comments",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "events",
-                ":eventId",
+                "{{eventId}}",
                 "comments"
-              ],
-              "variable": [
-                {
-                  "key": "eventId",
-                  "value": "{{eventId}}"
-                }
               ]
             }
           },
@@ -1451,7 +1445,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/:userId/comments/:commentId",
+              "raw": "{{baseUrl}}/users/:userId/comments/{{compid}}",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1459,16 +1453,12 @@
                 "users",
                 ":userId",
                 "comments",
-                ":commentId"
+                "{{compid}}"
               ],
               "variable": [
                 {
                   "key": "userId",
                   "value": "{{uid}}"
-                },
-                {
-                  "key": "commentId",
-                  "value": "{{compid}}"
                 }
               ]
             }
@@ -1590,20 +1580,14 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/users/:userId/comments",
+              "raw": "{{baseUrl}}/users/{{uid}}/comments",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "users",
-                ":userId",
+                "{{uid}}",
                 "comments"
-              ],
-              "variable": [
-                {
-                  "key": "userId",
-                  "value": "{{uid}}"
-                }
               ]
             }
           },
@@ -2352,7 +2336,7 @@
     },
     {
       "key": "uid1",
-      "value": 1
+      "value": ""
     },
     {
       "key": "reqid",
@@ -2394,6 +2378,10 @@
     {
       "key": "eventId",
       "value": 1
+    },
+    {
+      "key": "null",
+      "value": ""
     }
   ]
 }
