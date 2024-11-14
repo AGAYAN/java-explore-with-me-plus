@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/users/{userId}/comments")
+@Slf4j
 public class PrivateCommentController {
 
     private final CommentService commentService;
@@ -51,6 +53,7 @@ public class PrivateCommentController {
 
     @GetMapping
     public ResponseEntity<List<CommentDto>> getByUserComment(@PathVariable Long userId) {
+        log.info("Request received GET /user/{}/comments", userId);
         List<CommentDto> comments = commentService.getAllUserComments(userId);
         return ResponseEntity.ok(comments);
     }
