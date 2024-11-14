@@ -2352,7 +2352,7 @@
     },
     {
       "key": "uid1",
-      "value": ""
+      "value": 1
     },
     {
       "key": "reqid",
@@ -2389,11 +2389,11 @@
     },
     {
       "key": "userId",
-      "value": ""
+      "value": 1
     },
     {
       "key": "eventId",
-      "value": ""
+      "value": 1
     }
   ]
 }
