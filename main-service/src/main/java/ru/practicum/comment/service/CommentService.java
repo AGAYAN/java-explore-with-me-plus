@@ -19,6 +19,6 @@ public interface CommentService {
 
   List<CommentDto> getAllEventComments(GetCommentsAdminRequest param);
 
-  List<CommentDto> getAllEventComments(Long eventId);
+  List<CommentDto> getAllEventComments(Long eventId, int from, int size);
 
 }

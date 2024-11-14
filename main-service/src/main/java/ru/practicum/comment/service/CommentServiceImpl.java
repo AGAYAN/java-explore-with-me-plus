@@ -112,7 +112,7 @@ public class CommentServiceImpl implements CommentService {
   @Override
   public List<CommentDto> getAllUserComments(final Long userId) {
     User user = fetchUser(userId);
-    return CommentMapper.mapToCommentDto(commentRepository.findByUserId(user));
+    return CommentMapper.mapToCommentDto(commentRepository.findByUserId(user.getId()));
   }
 
   /**
@@ -122,13 +122,8 @@ public class CommentServiceImpl implements CommentService {
   @Transactional(readOnly = true)
   @Override
   public List<CommentDto> getAllEventComments(final GetCommentsAdminRequest param) {
-    if (!eventRepository.existsById(param.getEventId())) {
-      log.warn("Event with ID {} does not exist in the DB.", param.getEventId());
-      throw new NotFoundException("Event Not Found.");
-    }
-    final PageRequest page = PageRequest.of(param.getFrom() / param.getSize(), param.getSize());
     final List<Comment> comments =
-        commentRepository.findAllByEventId(param.getEventId(), page).getContent();
+        getEventComments(param.getEventId(), param.getFrom(), param.getSize());
     return CommentMapper.mapToCommentDto(comments);
   }
 
@@ -138,12 +133,21 @@ public class CommentServiceImpl implements CommentService {
    */
   @Transactional(readOnly = true)
   @Override
-  public List<CommentDto> getAllEventComments(final Long eventId) {
-    Event event = fetchEvent(eventId);
-    return CommentMapper.mapToCommentDto(commentRepository.findCommentByEventId(event));
+  public List<CommentDto> getAllEventComments(final Long eventId, final int from, final int size) {
+    return CommentMapper.mapToCommentDto(getEventComments(eventId,from,size));
+  }
+
+  private List<Comment> getEventComments(final Long eventId, final int from, final int size) {
+    if (!eventRepository.existsById(eventId)) {
+      log.warn("Event with ID {} does not exist in the DB.", eventId);
+      throw new NotFoundException("Event Not Found.");
+    }
+    final PageRequest page = PageRequest.of(from / size, size);
+    return commentRepository.findAllByEventId(eventId, page).getContent();
   }
 
   private User fetchUser(final Long userId) {
+    log.debug("Fetching user with ID {}", userId);
     return userRepository.findById(userId)
         .orElseThrow(() -> {
           log.warn("User with ID {} not found.", userId);
