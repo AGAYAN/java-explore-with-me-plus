@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.comment.dto.CommentDto;
 import ru.practicum.comment.service.CommentService;
@@ -17,6 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/users/{userId}/comments")
 @Slf4j
+@Validated
 public class PrivateCommentController {
 
     private final CommentService commentService;
@@ -26,7 +28,7 @@ public class PrivateCommentController {
     public CommentDto addComments(
             @PathVariable Long userId,
             @RequestParam @Positive Long eventId,
-            @RequestBody @Valid CommentDto commentDto) {
+            @RequestBody @Validated CommentDto commentDto) {
 
         commentDto.setUserId(userId);
         commentDto.setEventId(eventId);
