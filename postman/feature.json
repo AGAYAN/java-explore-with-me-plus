@@ -2072,13 +2072,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/events/:eventId/comments?from=0&size=1000",
+              "raw": "{{baseUrl}}/events/{{eventId}}/comments?from=0&size=1000",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "events",
-                ":eventId",
+                "{{eventId}}",
                 "comments"
               ],
               "query": [
@@ -2089,12 +2089,6 @@
                 {
                   "key": "size",
                   "value": "1000"
-                }
-              ],
-              "variable": [
-                {
-                  "key": "eventId",
-                  "value": "{{eventId}}"
                 }
               ]
             }
