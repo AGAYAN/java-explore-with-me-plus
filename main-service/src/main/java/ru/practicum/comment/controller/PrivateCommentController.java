@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.comment.dto.CommentDto;
-import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.service.CommentService;
 
 import java.util.List;
@@ -38,7 +37,7 @@ public class PrivateCommentController {
     public void deleteComment(
             @PathVariable @NonNull Long commentId,
             @PathVariable @NonNull Long userId) {
-        commentService.deleteUserComment(userId, commentId);
+        commentService.delete(userId, commentId);
     }
 
     @PatchMapping("/{commentId}")
@@ -51,8 +50,8 @@ public class PrivateCommentController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Comment>> getByUserComment(@PathVariable Long userId) {
-        List<Comment> comments = commentService.getByUserComment(userId);
+    public ResponseEntity<List<CommentDto>> getByUserComment(@PathVariable Long userId) {
+        List<CommentDto> comments = commentService.getAllUserComments(userId);
         return ResponseEntity.ok(comments);
     }
 }
