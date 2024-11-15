@@ -6,7 +6,7 @@ A microservice application that lets users share events and find company to join
 
 ## Feature "Comments"
 
-### <a href="https://github.com/AGAYAN/java-explore-with-me-plus/pull/49">Pull Request Link</a>
+### <a href="https://github.com/AGAYAN/java-explore-with-me-plus/pull/54">Pull Request Link</a>
 
  - Функциональность комментариев предоставляет пользователям возможность оставлять отзывы, 
 делиться мыслями или задавать вопросы о событиях, создавая интерактивную среду в приложении.  
