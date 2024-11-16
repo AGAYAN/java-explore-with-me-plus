@@ -977,7 +977,7 @@
 									"\r",
 									"const response = pm.response.json();\r",
 									"pm.test(\"Response should contain error message\", function () {\r",
-									"    pm.expect(response.message).to.equal(\"У вас нет прав на удаление этого комментария\");\r",
+									"    pm.expect(response.message).to.equal(\"A user can delete only their own comments.\");\r",
 									"});"
 								],
 								"type": "text/javascript",
