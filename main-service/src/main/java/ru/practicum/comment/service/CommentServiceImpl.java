@@ -32,7 +32,7 @@ public class CommentServiceImpl implements CommentService {
   private final EventRepository eventRepository;
 
   /**
-   * http://localhost:8080/users/{userId}/comments?eventId={eventId}
+   * /users/{userId}/comments?eventId={eventId}
    * <p> Saves a new comment data initiated by a current user.
    */
   @Override
@@ -60,7 +60,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   /**
-   * http://localhost:8080/users/{userId}/comments/{commentId}
+   * /users/{userId}/comments/{commentId}
    * <p> Deletes current user's comment
    */
   @Override
@@ -68,14 +68,14 @@ public class CommentServiceImpl implements CommentService {
     Comment comment = fetchComment(commentId);
 
     if (!comment.getUser().getId().equals(userId)) {
-      throw new ConflictException("У вас нет прав на удаление этого комментария");
+      throw new ConflictException("A user can delete only their own comments.");
     }
 
     commentRepository.delete(comment);
   }
 
   /**
-   * http://localhost:8080/admin/comments/{commentId}
+   * /admin/comments/{commentId}
    * <p> Deletes specified comment
    */
   @Override
@@ -85,7 +85,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   /**
-   * http://localhost:8080/users/{userId}/comments/{commentId}
+   * /users/{userId}/comments/{commentId}
    * <p> Update current user's comment
    */
   @Override
@@ -95,7 +95,7 @@ public class CommentServiceImpl implements CommentService {
     fetchUser(userId);
 
     if (!comment.getUser().getId().equals(userId)) {
-      throw new ConflictException("У вас нет прав на редактирование этого комментария");
+      throw new ConflictException("A user can update only their own comments.");
     }
 
     comment.setContent(commentDto.getContent());
@@ -105,7 +105,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   /**
-   * http://localhost:8080/users/{userId}/comments
+   * /users/{userId}/comments
    * <p> Get all comments created by given user, used for Private API
    */
   @Transactional(readOnly = true)
@@ -116,7 +116,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   /**
-   * http://localhost:8080/admin/comments
+   * /admin/comment
    * <p> Get comments related specified event, used for Admin API
    */
   @Transactional(readOnly = true)
@@ -128,7 +128,7 @@ public class CommentServiceImpl implements CommentService {
   }
 
   /**
-   * http://localhost:8080/events/{eventId}/comments
+   * /events/{eventId}/comments
    * <p> Get comments of given event for public API
    */
   @Transactional(readOnly = true)
@@ -151,7 +151,7 @@ public class CommentServiceImpl implements CommentService {
     return userRepository.findById(userId)
         .orElseThrow(() -> {
           log.warn("User with ID {} not found.", userId);
-          return new NotFoundException("Ошибка нету такого User");
+          return new NotFoundException("The user not found.");
         });
   }
 
@@ -159,7 +159,7 @@ public class CommentServiceImpl implements CommentService {
     return eventRepository.findById(eventId)
         .orElseThrow(() -> {
           log.warn("Event with ID {} not found.", eventId);
-          return new NotFoundException("Ошибка нету такого Event");
+          return new NotFoundException("The event not found.");
         });
   }
 
@@ -167,7 +167,7 @@ public class CommentServiceImpl implements CommentService {
     return commentRepository.findById(commentId)
         .orElseThrow(() -> {
           log.warn("Comment with ID {} not found.", commentId);
-          return new NotFoundException("Комментарий не найден");
+          return new NotFoundException("The comment not found.");
         });
   }
 }
